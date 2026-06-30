@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+
+  /* Палитра из Figma (тёмная тема) */
+  --color-bg: #0d0d0d;
+  --color-violet: #7c3aed;
+  --color-indigo: #4f46e5;
+  --color-lime: #a3e635;
+  --color-danger: #ef4444;
+  --color-muted: #9ca3af;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans), system-ui, "Segoe UI", Arial, sans-serif;
+  color: #fff;
+  background: var(--color-bg);
+}
+
+/* Поверхность-карточка как в макете */
+.surface {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hairline {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Градиентное число баланса */
+.gradient-num {
+  background-image: linear-gradient(to right, #7c3aed, #4f46e5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* CTA-кнопка с фиолетовым градиентом */
+.btn-grad {
+  background-image: linear-gradient(to right, #7c3aed, #4f46e5);
+  color: #fff;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.btn-grad:hover {
+  filter: brightness(1.08);
+}
+.btn-grad:active {
+  transform: scale(0.985);
+}
+.btn-grad:disabled {
+  filter: grayscale(0.5) opacity(0.5);
+}
+
+/* Цветные чипы балансов */
+.chip-pos {
+  background: rgba(163, 230, 53, 0.1);
+  border: 1px solid rgba(163, 230, 53, 0.2);
+  color: #a3e635;
+}
+.chip-neg {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+.chip-neutral {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}
+
+.card-shadow {
+  box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.4);
+}
+
+input,
+select {
+  color-scheme: dark;
+}
+
+/* Анимации модалок */
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sheetOut {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+.animate-overlay {
+  animation: overlayIn 0.2s ease-out;
+}
+.animate-sheet {
+  animation: sheetIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.animate-overlay-out {
+  animation: overlayOut 0.26s ease-in forwards;
+}
+.animate-sheet-out {
+  animation: sheetOut 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-overlay,
+  .animate-sheet {
+    animation: none;
+  }
+}
