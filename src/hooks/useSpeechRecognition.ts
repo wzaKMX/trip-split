@@ -48,7 +48,9 @@ interface SpeechRecognition {
  */
 export function useSpeechRecognition(options: Options = {}): SpeechRecognition {
   const { lang = "ru-RU", onFinal, onError } = options;
-  const [supported, setSupported] = useState(false);
+  // Поддержка определяется синхронно при монтировании (компонент монтируется
+  // только после клика пользователя — window уже доступен, SSR-несовпадения нет).
+  const [supported] = useState(() => getRecognitionCtor() !== null);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
 
@@ -65,10 +67,6 @@ export function useSpeechRecognition(options: Options = {}): SpeechRecognition {
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
-
-  useEffect(() => {
-    setSupported(getRecognitionCtor() !== null);
-  }, []);
 
   const start = useCallback(() => {
     const Ctor = getRecognitionCtor();
