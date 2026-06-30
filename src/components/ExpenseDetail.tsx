@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { deleteExpense } from "@/lib/db";
 import { formatDate, formatMoney } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
 import type { Expense, Member } from "@/lib/types";
@@ -11,6 +10,8 @@ import ReceiptViewer from "./ReceiptViewer";
 interface Props {
   expense: Expense;
   members: Member[];
+  /** Запросить удаление траты (анимация + удаление выполняются в списке). */
+  onDelete: (id: string) => void;
   onClose: () => void;
 }
 
@@ -20,7 +21,7 @@ const SOURCE_LABEL: Record<Expense["source"], string> = {
   receipt: "📷 По чеку",
 };
 
-export default function ExpenseDetail({ expense, members, onClose }: Props) {
+export default function ExpenseDetail({ expense, members, onDelete, onClose }: Props) {
   const [showReceipt, setShowReceipt] = useState(false);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
@@ -117,7 +118,8 @@ export default function ExpenseDetail({ expense, members, onClose }: Props) {
         <button
           onClick={() => {
             if (confirm("Удалить трату?")) {
-              deleteExpense(expense.id).then(requestClose);
+              onDelete(expense.id);
+              requestClose();
             }
           }}
           className="mt-3 w-full rounded-2xl border border-danger/30 bg-danger/10 py-3 font-bold text-danger transition hover:bg-danger/20"

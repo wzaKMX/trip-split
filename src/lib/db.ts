@@ -1,5 +1,6 @@
 import { getSupabase, RECEIPTS_BUCKET } from "./supabase";
 import { forgetTrip, rememberTrip } from "./myTrips";
+import { downscaleImage } from "./image";
 import type {
   Expense,
   Member,
@@ -17,7 +18,13 @@ export function newId(): string {
 
 // ── Мапперы строк БД (snake_case) → доменные типы (camelCase) ──
 
-type TripRow = { id: string; name: string; base_currency: string; created_at: string };
+type TripRow = {
+  id: string;
+  name: string;
+  base_currency: string;
+  hero_path: string | null;
+  created_at: string;
+};
 type MemberRow = { id: string; trip_id: string; name: string };
 type ExpenseRow = {
   id: string;
@@ -46,6 +53,7 @@ export function rowToTrip(r: TripRow): Trip {
     id: r.id,
     name: r.name,
     baseCurrency: r.base_currency,
+    heroPath: r.hero_path ?? undefined,
     createdAt: new Date(r.created_at).getTime(),
   };
 }
@@ -86,17 +94,54 @@ export async function createTrip(name: string, baseCurrency: string): Promise<Tr
 
 export async function deleteTrip(tripId: string): Promise<void> {
   const sb = getSupabase();
-  // удалить файлы чеков из Storage
+  // удалить файлы чеков и обложку из Storage
   const { data: receipts } = await sb
     .from("receipts")
     .select("path")
     .eq("trip_id", tripId);
   const paths = (receipts ?? []).map((r: { path: string }) => r.path);
+  const { data: trip } = await sb
+    .from("trips")
+    .select("hero_path")
+    .eq("id", tripId)
+    .maybeSingle();
+  const heroPath = (trip as { hero_path: string | null } | null)?.hero_path;
+  if (heroPath) paths.push(heroPath);
   if (paths.length) await sb.storage.from(RECEIPTS_BUCKET).remove(paths);
   // строки удалятся каскадом по trip_id
   const { error } = await sb.from("trips").delete().eq("id", tripId);
   if (error) throw error;
   forgetTrip(tripId);
+}
+
+/** Загружает/меняет обложку поездки. Возвращает путь файла в Storage. */
+export async function setTripHero(tripId: string, file: File | Blob): Promise<string> {
+  const sb = getSupabase();
+  // прежний файл — чтобы удалить после успешной замены
+  const { data: prev } = await sb
+    .from("trips")
+    .select("hero_path")
+    .eq("id", tripId)
+    .maybeSingle();
+  const prevPath = (prev as { hero_path: string | null } | null)?.hero_path ?? null;
+
+  const blob = await downscaleImage(file);
+  const path = `${tripId}/hero-${newId()}.jpg`;
+  const up = await sb.storage.from(RECEIPTS_BUCKET).upload(path, blob, {
+    contentType: "image/jpeg",
+    upsert: false,
+  });
+  if (up.error) throw up.error;
+
+  const { error } = await sb.from("trips").update({ hero_path: path }).eq("id", tripId);
+  if (error) {
+    await sb.storage.from(RECEIPTS_BUCKET).remove([path]); // откат
+    throw error;
+  }
+  if (prevPath && prevPath !== path) {
+    await sb.storage.from(RECEIPTS_BUCKET).remove([prevPath]);
+  }
+  return path;
 }
 
 export async function getTrip(tripId: string): Promise<Trip | null> {

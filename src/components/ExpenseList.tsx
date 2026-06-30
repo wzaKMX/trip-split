@@ -8,6 +8,8 @@ import ExpenseDetail from "./ExpenseDetail";
 interface Props {
   expenses: Expense[];
   members: Member[];
+  /** Подтверждённое удаление: фактически удаляет трату (после анимации). */
+  onDelete: (id: string) => void;
 }
 
 const SOURCE_ICON: Record<Expense["source"], string> = {
@@ -16,9 +18,26 @@ const SOURCE_ICON: Record<Expense["source"], string> = {
   receipt: "📷",
 };
 
-export default function ExpenseList({ expenses, members }: Props) {
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+export default function ExpenseList({ expenses, members, onDelete }: Props) {
   const [selected, setSelected] = useState<Expense | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
+
+  // Старт удаления: запускаем анимацию строки (или сразу коммитим без анимации).
+  function startRemove(eid: string) {
+    if (prefersReducedMotion()) {
+      onDelete(eid);
+      return;
+    }
+    setRemovingId(eid);
+  }
 
   if (expenses.length === 0) {
     return (
@@ -36,8 +55,19 @@ export default function ExpenseList({ expenses, members }: Props) {
       <ul className="space-y-2">
         {expenses.map((e) => {
           const everyone = e.splitBetween.length === members.length;
+          const removing = removingId === e.id;
           return (
-            <li key={e.id}>
+            <li
+              key={e.id}
+              className={removing ? "animate-expense-out" : undefined}
+              onAnimationEnd={(ev) => {
+                if (ev.target !== ev.currentTarget) return; // только своя анимация
+                if (removing) {
+                  onDelete(e.id);
+                  setRemovingId(null);
+                }
+              }}
+            >
               <button
                 onClick={() => setSelected(e)}
                 className="surface flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition hover:bg-white/[0.07]"
@@ -68,6 +98,7 @@ export default function ExpenseList({ expenses, members }: Props) {
         <ExpenseDetail
           expense={selected}
           members={members}
+          onDelete={(eid) => startRemove(eid)}
           onClose={() => setSelected(null)}
         />
       )}

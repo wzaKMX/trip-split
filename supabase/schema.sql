@@ -6,6 +6,7 @@ create table if not exists trips (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
   base_currency text not null default 'RUB',
+  hero_path     text,
   created_at    timestamptz not null default now()
 );
 
@@ -46,6 +47,11 @@ create index if not exists idx_receipts_trip   on receipts(trip_id);
 alter publication supabase_realtime add table trips;
 alter publication supabase_realtime add table members;
 alter publication supabase_realtime add table expenses;
+
+-- DELETE-события несут полную старую строку (включая trip_id), иначе
+-- подписки с фильтром trip_id=eq.… не получают события удаления.
+alter table expenses replica identity full;
+alter table members  replica identity full;
 
 -- ── RLS ───────────────────────────────────────────────────
 -- Доступ по неугадываемому UUID поездки в ссылке.

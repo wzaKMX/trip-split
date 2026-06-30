@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 import { rowToExpense, rowToMember, rowToTrip } from "@/lib/db";
 import { getMyTripIds, onMyTripsChange, rememberTrip } from "@/lib/myTrips";
+import { getMyMemberId, setMyMemberId } from "@/lib/identity";
 import type { Expense, Member, Trip } from "@/lib/types";
 
 /** Список «моих» поездок (по локальному индексу id), реактивно. */
@@ -173,17 +174,15 @@ export function useExpenses(tripId: string): Expense[] | undefined {
 export function useCurrentMember(
   tripId: string
 ): [string | null, (id: string | null) => void] {
-  const key = `trip-split:me:${tripId}`;
   const [me, setMe] = useState<string | null>(null);
 
   useEffect(() => {
-    setMe(localStorage.getItem(key));
-  }, [key]);
+    setMe(getMyMemberId(tripId));
+  }, [tripId]);
 
   const update = (id: string | null) => {
     setMe(id);
-    if (id) localStorage.setItem(key, id);
-    else localStorage.removeItem(key);
+    setMyMemberId(tripId, id);
   };
 
   return [me, update];

@@ -6,6 +6,7 @@ export interface Trip {
   id: ID;
   name: string;
   baseCurrency: Currency;
+  heroPath?: string; // путь обложки в Supabase Storage (бакет receipts)
   createdAt: number;
 }
 

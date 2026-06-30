@@ -130,9 +130,33 @@ select {
   will-change: transform;
 }
 
+/* Удаление строки траты: уезжает вбок и схлопывается по высоте */
+@keyframes expenseOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 96px;
+  }
+  45% {
+    opacity: 0;
+    transform: translateX(-32px);
+    max-height: 96px;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-32px);
+    max-height: 0;
+  }
+}
+.animate-expense-out {
+  overflow: hidden;
+  animation: expenseOut 0.34s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-overlay,
-  .animate-sheet {
+  .animate-sheet,
+  .animate-expense-out {
     animation: none;
   }
 }
