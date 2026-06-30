@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Member, ParsedExpense } from "@/lib/types";
 import { parseExpenseText } from "@/lib/localParse";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface Props {
   members: Member[];
@@ -13,30 +14,6 @@ interface Props {
   onError: (message: string) => void;
 }
 
-// Минимальные типы для Web Speech API (нет в стандартных typings).
-interface SpeechRecognitionLike {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((e: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((e: { error?: string }) => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-interface SpeechRecognitionEventLike {
-  results: ArrayLike<ArrayLike<{ transcript: string }>>;
-}
-
-function getRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
-  if (typeof window === "undefined") return null;
-  const w = window as unknown as {
-    SpeechRecognition?: new () => SpeechRecognitionLike;
-    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
-  };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
-}
-
 export default function VoiceInput({
   members,
   currentMemberId,
@@ -45,18 +22,9 @@ export default function VoiceInput({
   onParsed,
   onError,
 }: Props) {
-  const [supported, setSupported] = useState(false);
-  const [listening, setListening] = useState(false);
   const [parsing, setParsing] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const transcriptRef = useRef("");
 
-  useEffect(() => {
-    transcriptRef.current = transcript;
-  }, [transcript]);
-
-  function parseTranscript(text: string) {
+  function handleFinal(text: string) {
     setParsing(true);
     try {
       const parsed: ParsedExpense = parseExpenseText(
@@ -73,52 +41,18 @@ export default function VoiceInput({
     }
   }
 
-  function start() {
-    const Ctor = getRecognitionCtor();
-    if (!Ctor) {
-      onError("Голосовой ввод не поддерживается этим браузером");
-      return;
-    }
-    const rec = new Ctor();
-    rec.lang = "ru-RU";
-    rec.interimResults = true;
-    rec.continuous = false;
-    setTranscript("");
+  const { supported, listening, transcript, start, stop } = useSpeechRecognition({
+    onFinal: handleFinal,
+    onError,
+  });
 
-    rec.onresult = (e) => {
-      let text = "";
-      for (let i = 0; i < e.results.length; i++) {
-        text += e.results[i][0].transcript;
-      }
-      setTranscript(text);
-    };
-    rec.onerror = (e) => {
-      setListening(false);
-      if (e.error !== "aborted" && e.error !== "no-speech") {
-        onError(`Ошибка микрофона: ${e.error ?? "неизвестно"}`);
-      }
-    };
-    rec.onend = () => {
-      setListening(false);
-      const finalText = transcriptRef.current.trim();
-      if (finalText) parseTranscript(finalText);
-    };
-
-    recRef.current = rec;
-    setListening(true);
-    rec.start();
-  }
-
-  function stop() {
-    recRef.current?.stop();
-  }
-
+  const startedRef = useRef(false);
   useEffect(() => {
-    const ok = getRecognitionCtor() !== null;
-    setSupported(ok);
-    if (ok && autoStart) start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (supported && autoStart && !startedRef.current) {
+      startedRef.current = true;
+      start();
+    }
+  }, [supported, autoStart, start]);
 
   if (!supported) return null;
 

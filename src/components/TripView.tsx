@@ -13,14 +13,13 @@ import { deleteTrip } from "@/lib/db";
 import { computeBalances, minimizeTransfers, totalSpent } from "@/lib/settle";
 import { formatMoney } from "@/lib/format";
 import MembersSheet from "@/components/MembersSheet";
-import ExpenseForm from "@/components/ExpenseForm";
+import VoiceCapture from "@/components/VoiceCapture";
 import ExpenseList from "@/components/ExpenseList";
 import BalancesView from "@/components/BalancesView";
 import SettleUp from "@/components/SettleUp";
 import { AvatarStack } from "@/components/Avatar";
 
 type Tab = "expenses" | "balances";
-type FormAction = "manual" | "voice" | "receipt";
 
 export default function TripView({ id }: { id: string }) {
   const router = useRouter();
@@ -30,7 +29,7 @@ export default function TripView({ id }: { id: string }) {
   const [currentMemberId, setCurrentMemberId] = useCurrentMember(id);
 
   const [tab, setTab] = useState<Tab>("expenses");
-  const [form, setForm] = useState<FormAction | null>(null);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -220,7 +219,7 @@ export default function TripView({ id }: { id: string }) {
       {/* Плавающая кнопка */}
       <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-5 pb-5">
         <button
-          onClick={() => setForm("voice")}
+          onClick={() => setVoiceOpen(true)}
           disabled={!canAdd}
           className="btn-grad card-shadow flex w-full items-center justify-center gap-2 rounded-full px-4 py-4 text-base font-bold"
         >
@@ -228,14 +227,13 @@ export default function TripView({ id }: { id: string }) {
         </button>
       </div>
 
-      {form && (
-        <ExpenseForm
+      {voiceOpen && (
+        <VoiceCapture
           tripId={id}
           members={members}
           baseCurrency={trip.baseCurrency}
           currentMemberId={currentMemberId}
-          initialAction={form}
-          onClose={() => setForm(null)}
+          onClose={() => setVoiceOpen(false)}
         />
       )}
 

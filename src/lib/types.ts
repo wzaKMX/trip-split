@@ -63,3 +63,19 @@ export interface ParsedExpense {
   splitBetween: ID[]; // id участников; пустой массив => делить на всех
   note?: string; // пояснение модели, если что-то неоднозначно
 }
+
+/** Тип распознанной сущности в тексте — для подсветки расшифровки. */
+export type EntityType = "amount" | "payer" | "member" | "all";
+
+/** Позиция распознанной сущности в исходном тексте (полуинтервал [start, end)). */
+export interface EntitySpan {
+  start: number;
+  end: number;
+  type: EntityType;
+}
+
+/** Результат анализа фразы: значения + позиции сущностей для подсветки. */
+export interface AnalyzedExpense {
+  parsed: ParsedExpense;
+  spans: EntitySpan[];
+}

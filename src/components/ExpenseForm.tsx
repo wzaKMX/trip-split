@@ -19,6 +19,8 @@ interface Props {
   baseCurrency: string;
   currentMemberId: string | null;
   initialAction?: "manual" | "voice" | "receipt";
+  /** Предзаполнение из голосового экрана (распознанные значения). */
+  initial?: { parsed: ParsedExpense; transcript?: string };
   onClose: () => void;
 }
 
@@ -34,15 +36,29 @@ export default function ExpenseForm({
   baseCurrency,
   currentMemberId,
   initialAction = "manual",
+  initial,
   onClose,
 }: Props) {
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState(baseCurrency);
-  const [paidBy, setPaidBy] = useState<string>(currentMemberId ?? members[0]?.id ?? "");
-  const [splitBetween, setSplitBetween] = useState<string[]>(members.map((m) => m.id));
+  // Предзаполнение из голосового экрана: только валидные значения.
+  const seed = initial?.parsed;
+  const seededPaidBy =
+    seed?.paidBy && members.some((m) => m.id === seed.paidBy) ? seed.paidBy : null;
+  const seededSplit =
+    seed && seed.splitBetween.length > 0
+      ? seed.splitBetween.filter((id) => members.some((m) => m.id === id))
+      : [];
+
+  const [description, setDescription] = useState(seed?.description ?? "");
+  const [amount, setAmount] = useState(seed?.amount != null ? String(seed.amount) : "");
+  const [currency, setCurrency] = useState(seed?.currency ?? baseCurrency);
+  const [paidBy, setPaidBy] = useState<string>(
+    seededPaidBy ?? currentMemberId ?? members[0]?.id ?? ""
+  );
+  const [splitBetween, setSplitBetween] = useState<string[]>(
+    seededSplit.length > 0 ? seededSplit : members.map((m) => m.id)
+  );
   const [dateStr, setDateStr] = useState(todayInput());
-  const [source, setSource] = useState<ExpenseSource>("manual");
+  const [source, setSource] = useState<ExpenseSource>(seed ? "voice" : "manual");
   const [receiptBlob, setReceiptBlob] = useState<Blob | null>(null);
   const [receiptExtraction, setReceiptExtraction] = useState<ReceiptExtraction | null>(
     null
