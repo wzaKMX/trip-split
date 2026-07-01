@@ -17,6 +17,7 @@ export default function NewTripSheet({ onClose }: Props) {
   const [cover, setCover] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pickCurrency, setPickCurrency] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
   const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
@@ -89,19 +90,23 @@ export default function NewTripSheet({ onClose }: Props) {
         {/* Грабер для свайпа вниз */}
         <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
 
-        {/* Верхняя панель: закрыть */}
-        <div className="mb-6 flex justify-end">
+        {/* Верхняя панель: Отмена слева, заголовок по центру */}
+        <div className="relative mb-2 flex items-center justify-between">
           <button
+            type="button"
             onClick={requestClose}
-            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
-            aria-label="Закрыть"
+            className="surface rounded-full px-4 py-2 text-[15px] font-semibold text-muted transition hover:text-ink"
           >
-            ✕
+            Отмена
           </button>
+          <div className="pointer-events-none absolute inset-x-0 text-center text-[15px] font-bold">
+            Новая поездка
+          </div>
+          {/* Спейсер для баланса заголовка по центру */}
+          <div className="h-9 w-[76px] shrink-0" />
         </div>
 
         <form onSubmit={handleCreate} className="flex min-h-0 flex-1 flex-col">
-          {/* Иконка обложки над заголовком */}
           <input
             ref={coverInputRef}
             type="file"
@@ -109,72 +114,72 @@ export default function NewTripSheet({ onClose }: Props) {
             className="hidden"
             onChange={(e) => setCover(e.target.files?.[0] ?? null)}
           />
-          <button
-            type="button"
-            onClick={() => coverInputRef.current?.click()}
-            className="mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white text-2xl text-muted transition hover:bg-white/70"
-            aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
-          >
-            {coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
-            ) : (
-              "🖼"
-            )}
-          </button>
 
-          {/* Крупный ввод названия — как заголовок страницы */}
-          <input
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Название"
-            className="w-full bg-transparent text-[40px] font-bold leading-[1.1] tracking-[-0.01em] outline-none placeholder:text-black/20"
-          />
+          {/* Центральная зона: обложка + крупный ввод названия */}
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5">
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white text-2xl text-muted transition hover:bg-white/70"
+              aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
+            >
+              {coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
+              ) : (
+                "🖼"
+              )}
+            </button>
 
-          {/* Выбор валюты под заголовком — маленькие аутлайновые кнопки */}
-          <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none]">
-            {CURRENCIES.map((c) => {
-              const on = c === currency;
-              return (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`flex h-7 shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-xs font-bold transition ${
-                    on
-                      ? "border-ink text-ink"
-                      : "border-line text-muted hover:text-ink"
-                  }`}
-                >
-                  {currencySymbol(c)} {c}
-                </button>
-              );
-            })}
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Название"
+              className="w-full bg-transparent text-center text-[40px] font-bold leading-[1.1] tracking-[-0.01em] outline-none placeholder:text-black/20"
+            />
           </div>
 
-          {/* Пустое пространство прижимает кнопку к низу (правый нижний угол) */}
-          <div className="min-h-12 flex-1" />
+          {/* Валюта — таблеткой по центру, с всплывающим выбором */}
+          <div className="relative flex justify-center">
+            {pickCurrency && (
+              <div className="absolute bottom-full mb-2 flex max-w-[90vw] flex-wrap justify-center gap-2 rounded-2xl bg-white p-2 card-shadow">
+                {CURRENCIES.map((c) => {
+                  const on = c === currency;
+                  return (
+                    <button
+                      type="button"
+                      key={c}
+                      onClick={() => {
+                        setCurrency(c);
+                        setPickCurrency(false);
+                      }}
+                      className={`rounded-full px-3 py-1.5 text-sm font-bold transition ${
+                        on ? "bg-ink text-white" : "text-muted hover:text-ink"
+                      }`}
+                    >
+                      {currencySymbol(c)} {c}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setPickCurrency((v) => !v)}
+              className="surface rounded-full px-4 py-2 text-[15px] font-bold text-ink transition"
+            >
+              {currencySymbol(currency)} {currency}
+            </button>
+          </div>
 
+          {/* Кнопка создания — широкая, над клавиатурой */}
           <button
             type="submit"
             disabled={creating || !name.trim()}
-            className="btn-grad flex h-14 w-14 items-center justify-center self-end rounded-full"
-            aria-label="Создать поездку"
+            className="btn-grad mt-4 flex h-14 w-full items-center justify-center rounded-2xl text-[17px] font-bold"
           >
-            {creating ? (
-              <span className="text-sm font-bold">…</span>
-            ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M5 12h14M13 6l6 6-6 6"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
+            {creating ? "Создаём…" : "Создать поездку"}
           </button>
         </form>
       </div>
