@@ -107,8 +107,8 @@ export default function TripView({ id }: { id: string }) {
 
   return (
     <main className="mx-auto w-full max-w-md px-5 pb-28 pt-0">
-      {/* Хиро-баннер с обложкой — уходит под статус-бар */}
-      <div className="relative -mx-5 mb-4 h-[calc(13rem+env(safe-area-inset-top))] overflow-hidden">
+      {/* Хиро-обложка — чистое фото под статус-баром */}
+      <div className="relative -mx-5 h-[calc(15rem+env(safe-area-inset-top))] overflow-hidden">
         {trip.heroPath ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -122,23 +122,66 @@ export default function TripView({ id }: { id: string }) {
             style={{ backgroundImage: coverFor(trip.id) }}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/85" />
 
-        {/* Верхние контролы поверх обложки — ниже чёлки/статус-бара */}
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
+        {/* скрытый инпут смены фото */}
+        <input
+          ref={heroInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleHeroPick(f);
+            if (heroInputRef.current) heroInputRef.current.value = "";
+          }}
+        />
+
+        {/* Круглые белые кнопки: назад / поделиться */}
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
           <Link
             href="/"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-lg text-white backdrop-blur transition hover:bg-black/55"
             aria-label="Назад"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md transition active:scale-95"
           >
-            ←
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
-          <div className="flex items-center gap-2">
+          <button
+            onClick={share}
+            aria-label="Поделиться"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md transition active:scale-95"
+          >
+            {copied ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M10 13a5 5 0 007.07 0l2-2a5 5 0 00-7.07-7.07l-1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 11a5 5 0 00-7.07 0l-2 2a5 5 0 007.07 7.07l1-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Светлый блок со скруглёнными углами, наезжающий на фото */}
+      <div className="relative -mx-5 -mt-6 rounded-t-3xl bg-bg px-5 pt-6">
+        {/* Заголовок + действия (сменить фото / удалить) */}
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <h1 className="text-[28px] font-black leading-tight">{trip.name}</h1>
+          <div className="flex shrink-0 items-center gap-2 pt-1">
             <button
-              onClick={share}
-              className="flex h-9 items-center gap-1.5 rounded-full bg-black/35 px-3 text-sm font-bold text-white backdrop-blur transition hover:bg-black/55"
+              onClick={() => heroInputRef.current?.click()}
+              disabled={heroBusy}
+              aria-label="Сменить фото"
+              className="inset flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:text-ink disabled:opacity-60"
             >
-              {copied ? "✓ Скопировано" : "🔗 Поделиться"}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="2" />
+              </svg>
             </button>
             <button
               onClick={() => {
@@ -146,64 +189,39 @@ export default function TripView({ id }: { id: string }) {
                   deleteTrip(trip.id).then(() => router.push("/"));
                 }
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur transition hover:text-danger"
               aria-label="Удалить поездку"
+              className="inset flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:text-danger"
             >
-              🗑
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
           </div>
         </div>
 
-        {/* Название + кнопка смены фото */}
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
-          <h1 className="text-[28px] font-black leading-tight text-white drop-shadow">
-            {trip.name}
-          </h1>
-          <input
-            ref={heroInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleHeroPick(f);
-              if (heroInputRef.current) heroInputRef.current.value = "";
-            }}
-          />
-          <button
-            onClick={() => heroInputRef.current?.click()}
-            disabled={heroBusy}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-black/35 px-3 text-sm font-bold text-white backdrop-blur transition hover:bg-black/55 disabled:opacity-60"
-            aria-label="Сменить фото"
-          >
-            {heroBusy ? "Загрузка…" : trip.heroPath ? "📷" : "📷 Фото"}
-          </button>
-        </div>
-      </div>
-
-      {/* Компактная стопка участников под названием */}
-      <button
-        onClick={() => setMembersOpen(true)}
-        className="mb-4 flex items-center gap-2.5"
-      >
-        {members.length > 0 ? (
-          <>
-            <AvatarStack people={members} size={26} />
-            <span className="text-sm font-medium text-muted">
-              {members.length}{" "}
-              {members.length === 1
-                ? "участник"
-                : members.length < 5
-                  ? "участника"
-                  : "участников"}
+        {/* Компактная стопка участников под названием */}
+        <button
+          onClick={() => setMembersOpen(true)}
+          className="mb-4 flex items-center gap-2.5"
+        >
+          {members.length > 0 ? (
+            <>
+              <AvatarStack people={members} size={26} />
+              <span className="text-sm font-medium text-muted">
+                {members.length}{" "}
+                {members.length === 1
+                  ? "участник"
+                  : members.length < 5
+                    ? "участника"
+                    : "участников"}
+              </span>
+            </>
+          ) : (
+            <span className="rounded-full bg-ink px-3 py-1.5 text-sm font-bold text-white">
+              ＋ Добавить участников
             </span>
-          </>
-        ) : (
-          <span className="rounded-full bg-ink px-3 py-1.5 text-sm font-bold text-white">
-            ＋ Добавить участников
-          </span>
-        )}
-      </button>
+          )}
+        </button>
 
       {/* Балансовая карта — мои деньги */}
       <div className="surface mb-6 rounded-3xl p-5">
@@ -303,6 +321,7 @@ export default function TripView({ id }: { id: string }) {
           </section>
         </div>
       )}
+      </div>
 
       {/* Плавающая кнопка */}
       <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-5 pb-5">
