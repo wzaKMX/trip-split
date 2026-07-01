@@ -12,6 +12,12 @@ const ibmPlexSans = IBM_Plex_Sans({
 export const metadata: Metadata = {
   title: "TripSplit — долги в поездках",
   description: "Делите общие траты в поездках: голосовой ввод и распознавание чеков",
+  // Контент уходит под системный статус-бар (иначе iOS резервирует белую полосу)
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TripSplit",
+  },
 };
 
 export const viewport = {
