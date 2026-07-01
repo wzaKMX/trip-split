@@ -22,27 +22,30 @@ export default function HomePage() {
   useEffect(refreshMe, []);
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 pb-28 pt-12">
+    <main className="mx-auto w-full max-w-md px-5 pb-28 pt-[calc(env(safe-area-inset-top)+80px)]">
+      {/* Фиксированный хедер 64px, прибит к верху (учёт чёлки/статус-бара) */}
+      <header className="fixed inset-x-0 top-0 z-40 bg-bg pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex h-16 max-w-md items-center justify-between px-5">
+          <Logo height={28} />
+          {me.name && (
+            <button
+              onClick={() => setEditingMe(true)}
+              className="shrink-0"
+              aria-label="Профиль"
+              title={me.name}
+            >
+              <Avatar name={me.name} emoji={me.emoji} size={36} ring={false} />
+            </button>
+          )}
+        </div>
+      </header>
+
       {!supabaseConfigured && (
         <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
           Не подключён общий бэкенд: задайте NEXT_PUBLIC_SUPABASE_URL и
           NEXT_PUBLIC_SUPABASE_ANON_KEY в .env.local, чтобы поездки сохранялись в облаке.
         </div>
       )}
-
-      <header className="mb-6 flex items-center justify-between gap-3">
-        <Logo height={28} />
-        {me.name && (
-          <button
-            onClick={() => setEditingMe(true)}
-            className="shrink-0"
-            aria-label="Профиль"
-            title={me.name}
-          >
-            <Avatar name={me.name} emoji={me.emoji} size={36} ring={false} />
-          </button>
-        )}
-      </header>
 
       {trips === undefined ? (
         <p className="text-sm text-muted">Загрузка…</p>

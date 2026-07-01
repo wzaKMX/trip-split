@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addExpense, saveReceipt } from "@/lib/db";
 import { CURRENCIES } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
+import { useDragToClose } from "@/hooks/useDragToClose";
 import type {
   ExpenseSource,
   Member,
@@ -66,6 +67,7 @@ export default function ExpenseForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
+  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
 
   function toggleSplit(id: string) {
     setSplitBetween((prev) =>
@@ -157,12 +159,16 @@ export default function ExpenseForm({
       onClick={requestClose}
     >
       <div
-        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
+        ref={scrollRef}
+        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        {...dragHandlers}
         {...sheetProps}
       >
+        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-extrabold">Новая трата</h2>
           <button

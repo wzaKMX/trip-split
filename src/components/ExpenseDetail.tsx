@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDate, formatMoney } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
+import { useDragToClose } from "@/hooks/useDragToClose";
 import type { Expense, Member } from "@/lib/types";
 import Avatar from "./Avatar";
 import ReceiptViewer from "./ReceiptViewer";
@@ -24,6 +25,7 @@ const SOURCE_LABEL: Record<Expense["source"], string> = {
 export default function ExpenseDetail({ expense, members, onDelete, onClose }: Props) {
   const [showReceipt, setShowReceipt] = useState(false);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
+  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
   const memberOf = (id: string) => members.find((m) => m.id === id);
   const nameOf = (id: string) => memberOf(id)?.name ?? "?";
 
@@ -43,12 +45,16 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
       onClick={requestClose}
     >
       <div
-        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
+        ref={scrollRef}
+        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        {...dragHandlers}
         {...sheetProps}
       >
+        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
         <div className="mb-4 flex items-center justify-between">
           <span className="surface rounded-full px-3 py-1 text-xs font-bold text-muted">
             {SOURCE_LABEL[expense.source]}

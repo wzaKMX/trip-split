@@ -5,6 +5,7 @@ import { addMember, createTrip, setTripHero } from "@/lib/db";
 import { getMyEmoji, getMyName } from "@/lib/identity";
 import { CURRENCIES, currencySymbol } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
+import { useDragToClose } from "@/hooks/useDragToClose";
 
 interface Props {
   onClose: () => void;
@@ -18,6 +19,7 @@ export default function NewTripSheet({ onClose }: Props) {
   const [creating, setCreating] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
+  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
 
   // Оверлей привязан к видимой области (visual viewport): при открытии
   // клавиатуры она ужимается, и низ модалки (кнопка) остаётся над клавиатурой.
@@ -75,12 +77,18 @@ export default function NewTripSheet({ onClose }: Props) {
       onClick={requestClose}
     >
       <div
-        className={`flex h-full w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:rounded-3xl ${
+        ref={scrollRef}
+        className={`flex h-full w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        {...dragHandlers}
         {...sheetProps}
       >
+        {/* Грабер для свайпа вниз */}
+        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
+
         {/* Верхняя панель: закрыть */}
         <div className="mb-6 flex justify-end">
           <button

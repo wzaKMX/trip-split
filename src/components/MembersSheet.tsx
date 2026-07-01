@@ -1,6 +1,7 @@
 "use client";
 
 import { useSheetClose } from "@/hooks/useSheetClose";
+import { useDragToClose } from "@/hooks/useDragToClose";
 import type { Member } from "@/lib/types";
 import MemberManager from "./MemberManager";
 
@@ -20,6 +21,7 @@ export default function MembersSheet({
   onClose,
 }: Props) {
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
+  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
 
   return (
     <div
@@ -29,12 +31,16 @@ export default function MembersSheet({
       onClick={requestClose}
     >
       <div
-        className={`w-full max-w-lg rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
+        ref={scrollRef}
+        className={`w-full max-w-lg rounded-t-3xl bg-field p-5 pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        {...dragHandlers}
         {...sheetProps}
       >
+        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-extrabold">Участники</h2>
           <button

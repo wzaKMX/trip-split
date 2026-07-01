@@ -18,6 +18,8 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  // чёлка/статус-бар: даёт ненулевые env(safe-area-inset-*)
+  viewportFit: "cover" as const,
   // клавиатура ужимает вьюпорт → низ модалок остаётся над ней
   interactiveWidget: "resizes-content" as const,
 };

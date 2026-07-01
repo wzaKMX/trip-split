@@ -57,7 +57,8 @@ export default function VoiceCapture({
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [dragY, setDragY] = useState(0); // текущее смещение свайпа вверх (px)
+  const [dragY, setDragY] = useState(0); // смещение свайпа: <0 вверх (→ форма), >0 вниз (→ закрыть)
+  const [snapping, setSnapping] = useState(false);
   const dragStartRef = useRef<number | null>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
 
@@ -120,20 +121,34 @@ export default function VoiceCapture({
     }
   }
 
-  // Жест свайпа вверх по плашке.
+  // Жест по плашке: вверх → полная форма, вниз → закрыть.
   function onTouchStart(e: React.TouchEvent) {
     dragStartRef.current = e.touches[0].clientY;
+    setSnapping(false);
   }
   function onTouchMove(e: React.TouchEvent) {
     if (dragStartRef.current == null) return;
-    const up = dragStartRef.current - e.touches[0].clientY;
-    setDragY(Math.max(0, Math.min(up, 160)));
+    const dy = e.touches[0].clientY - dragStartRef.current;
+    setDragY(Math.max(-160, dy)); // вверх ограничиваем, вниз свободно
   }
   function onTouchEnd() {
-    const up = dragY;
+    const dy = dragY;
     dragStartRef.current = null;
-    setDragY(0);
-    if (up > SWIPE_THRESHOLD) expand();
+    if (dy < -SWIPE_THRESHOLD) {
+      setDragY(0);
+      expand();
+    } else if (dy > 90) {
+      const reduce =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) return onClose();
+      setSnapping(true);
+      setDragY(typeof window !== "undefined" ? window.innerHeight : 1000);
+      window.setTimeout(onClose, 220);
+    } else {
+      setSnapping(true);
+      setDragY(0);
+    }
   }
 
   // Раскрытая полная форма — отдельный оверлей, слайд снизу.
@@ -161,13 +176,22 @@ export default function VoiceCapture({
         className={`w-full max-w-lg rounded-t-3xl bg-field px-5 pb-5 pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
-        style={dragY ? { transform: `translateY(${-dragY}px)` } : undefined}
+        style={{
+          transform: dragY ? `translateY(${dragY}px)` : undefined,
+          transition: snapping
+            ? "transform 0.22s cubic-bezier(0.22,1,0.36,1)"
+            : dragY
+              ? "none"
+              : undefined,
+        }}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         {...sheetProps}
       >
+        {/* Грабер: свайп вниз — закрыть, вверх — форма */}
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-black/15" />
         {/* Заголовок + закрыть */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
