@@ -106,9 +106,9 @@ export default function TripView({ id }: { id: string }) {
     : 0;
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 pb-28 pt-7">
-      {/* Хиро-баннер с обложкой */}
-      <div className="relative -mx-5 -mt-7 mb-4 h-52 overflow-hidden">
+    <main className="mx-auto w-full max-w-md px-5 pb-28 pt-0">
+      {/* Хиро-баннер с обложкой — уходит под статус-бар */}
+      <div className="relative -mx-5 mb-4 h-[calc(13rem+env(safe-area-inset-top))] overflow-hidden">
         {trip.heroPath ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -124,8 +124,8 @@ export default function TripView({ id }: { id: string }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/85" />
 
-        {/* Верхние контролы поверх обложки */}
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
+        {/* Верхние контролы поверх обложки — ниже чёлки/статус-бара */}
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
           <Link
             href="/"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-lg text-white backdrop-blur transition hover:bg-black/55"

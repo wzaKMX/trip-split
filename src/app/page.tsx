@@ -24,7 +24,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto w-full max-w-md px-5 pb-28 pt-[calc(env(safe-area-inset-top)+80px)]">
       {/* Фиксированный хедер 64px, прибит к верху (учёт чёлки/статус-бара) */}
-      <header className="fixed inset-x-0 top-0 z-40 bg-bg pt-[env(safe-area-inset-top)]">
+      <header className="fixed inset-x-0 top-0 z-40 pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-16 max-w-md items-center justify-between px-5">
           <Logo height={28} />
           {me.name && (

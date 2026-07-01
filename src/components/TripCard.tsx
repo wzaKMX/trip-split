@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useExpenses, useMembers } from "@/hooks/useTripData";
+import { receiptUrl } from "@/lib/db";
 import { coverFor } from "@/lib/avatar";
 import { formatMoney } from "@/lib/format";
 import { totalSpent } from "@/lib/settle";
@@ -17,8 +18,19 @@ export default function TripCard({ trip }: { trip: Trip }) {
     <Link
       href={`/trip/?id=${trip.id}`}
       className="card-shadow relative flex aspect-[3/4] flex-col items-center justify-center overflow-hidden rounded-3xl p-4 text-center"
-      style={{ backgroundImage: coverFor(trip.id) }}
     >
+      {/* Обложка: загруженное хиро-фото поездки или градиент */}
+      {trip.heroPath ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={receiptUrl(trip.heroPath)}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0" style={{ backgroundImage: coverFor(trip.id) }} />
+      )}
+
       {/* затемнение для читаемости центрированного текста */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/35 to-black/70" />
 
