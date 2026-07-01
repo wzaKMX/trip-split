@@ -5,7 +5,6 @@ import { addMember, createTrip, setTripHero } from "@/lib/db";
 import { getMyEmoji, getMyName } from "@/lib/identity";
 import { CURRENCIES, currencySymbol } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
-import { useDragToClose } from "@/hooks/useDragToClose";
 
 interface Props {
   onClose: () => void;
@@ -13,16 +12,15 @@ interface Props {
 
 export default function NewTripSheet({ onClose }: Props) {
   const [name, setName] = useState("");
-  const [currency, setCurrency] = useState("RUB");
+  const [currency, setCurrency] = useState("RUB"); // рубль предвыбран по умолчанию
   const [cover, setCover] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLTextAreaElement>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
-  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
 
-  // Оверлей привязан к видимой области (visual viewport): при открытии
-  // клавиатуры она ужимается, и низ модалки (кнопка) остаётся над клавиатурой.
+  // Центрируем карточку в видимой области (над клавиатурой)
   const [vv, setVv] = useState<{ top: number; height: number } | null>(null);
   useEffect(() => {
     const v = window.visualViewport;
@@ -36,6 +34,14 @@ export default function NewTripSheet({ onClose }: Props) {
       v.removeEventListener("scroll", onResize);
     };
   }, []);
+
+  // авто-высота поля названия (перенос длинного текста)
+  useEffect(() => {
+    const el = nameRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [name]);
 
   // превью обложки
   useEffect(() => {
@@ -70,70 +76,71 @@ export default function NewTripSheet({ onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
+      className={`mesh-light fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 px-16 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)] ${
         closing ? "animate-overlay-out" : "animate-overlay"
       }`}
       style={vv ? { top: vv.top, height: vv.height, bottom: "auto" } : undefined}
       onClick={requestClose}
+      {...sheetProps}
     >
+      {/* Верхний ряд над карточкой: обложка + закрыть */}
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => setCover(e.target.files?.[0] ?? null)}
+      />
       <div
-        ref={scrollRef}
-        className={`flex h-full w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 sm:rounded-3xl ${
-          closing ? "animate-sheet-out" : "animate-sheet"
-        }`}
-        style={dragStyle}
+        className="flex w-full max-w-md shrink-0 items-center justify-between"
         onClick={(e) => e.stopPropagation()}
-        {...dragHandlers}
-        {...sheetProps}
       >
-        {/* Грабер для свайпа вниз */}
-        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
+        <button
+          type="button"
+          onClick={() => coverInputRef.current?.click()}
+          className="surface flex h-11 w-11 items-center justify-center overflow-hidden rounded-full text-lg text-muted shadow-md transition hover:text-ink"
+          aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
+        >
+          {coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
+          ) : (
+            "🖼"
+          )}
+        </button>
+        <button
+          onClick={requestClose}
+          className="surface flex h-11 w-11 items-center justify-center rounded-full text-lg text-muted shadow-md transition hover:text-ink"
+          aria-label="Закрыть"
+        >
+          ✕
+        </button>
+      </div>
 
-        {/* Верхняя панель: закрыть */}
-        <div className="mb-6 flex justify-end">
-          <button
-            onClick={requestClose}
-            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
-            aria-label="Закрыть"
-          >
-            ✕
-          </button>
-        </div>
-
-        <form onSubmit={handleCreate} className="flex min-h-0 flex-1 flex-col">
-          {/* Иконка обложки над заголовком */}
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => setCover(e.target.files?.[0] ?? null)}
-          />
-          <button
-            type="button"
-            onClick={() => coverInputRef.current?.click()}
-            className="mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white text-2xl text-muted transition hover:bg-white/70"
-            aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
-          >
-            {coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
-            ) : (
-              "🖼"
-            )}
-          </button>
-
-          {/* Крупный ввод названия — как заголовок страницы */}
-          <input
+      {/* Карточка — вылетает снизу с фейдом */}
+      <form
+        onSubmit={handleCreate}
+        onClick={(e) => e.stopPropagation()}
+        className="animate-card-in flex h-[390px] max-h-full w-full max-w-md flex-col rounded-[32px] bg-white p-3 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.3)]"
+      >
+        {/* Центр: название + валюта */}
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 px-2">
+          <textarea
+            ref={nameRef}
             autoFocus
+            rows={1}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
             placeholder="Название"
-            className="w-full bg-transparent text-[40px] font-bold leading-[1.1] tracking-[-0.01em] outline-none placeholder:text-black/20"
+            className="w-full resize-none overflow-hidden bg-transparent text-center text-[36px] font-bold leading-[1.1] tracking-[-0.01em] outline-none placeholder:text-black/20"
           />
-
-          {/* Выбор валюты под заголовком — маленькие аутлайновые кнопки */}
-          <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="-mx-3 flex w-[calc(100%+1.5rem)] gap-2 overflow-x-auto px-3 [-ms-overflow-style:none] [scrollbar-width:none]">
             {CURRENCIES.map((c) => {
               const on = c === currency;
               return (
@@ -142,9 +149,7 @@ export default function NewTripSheet({ onClose }: Props) {
                   key={c}
                   onClick={() => setCurrency(c)}
                   className={`flex h-7 shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-xs font-bold transition ${
-                    on
-                      ? "border-ink text-ink"
-                      : "border-line text-muted hover:text-ink"
+                    on ? "border-ink text-ink" : "border-line text-muted hover:text-ink"
                   }`}
                 >
                   {currencySymbol(c)} {c}
@@ -152,32 +157,17 @@ export default function NewTripSheet({ onClose }: Props) {
               );
             })}
           </div>
+        </div>
 
-          {/* Пустое пространство прижимает кнопку к низу (правый нижний угол) */}
-          <div className="min-h-12 flex-1" />
-
-          <button
-            type="submit"
-            disabled={creating || !name.trim()}
-            className="btn-grad flex h-14 w-14 items-center justify-center self-end rounded-full"
-            aria-label="Создать поездку"
-          >
-            {creating ? (
-              <span className="text-sm font-bold">…</span>
-            ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M5 12h14M13 6l6 6-6 6"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </button>
-        </form>
-      </div>
+        {/* Создать — тёмная кнопка снизу карточки */}
+        <button
+          type="submit"
+          disabled={creating || !name.trim()}
+          className="btn-grad mt-3 flex h-14 w-full shrink-0 items-center justify-center rounded-full text-base font-bold"
+        >
+          {creating ? "Создаю…" : "Создать"}
+        </button>
+      </form>
     </div>
   );
 }
