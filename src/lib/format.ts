@@ -28,3 +28,13 @@ export function formatDate(ts: number): string {
 }
 
 export const CURRENCIES = ["RUB", "USD", "EUR", "GBP", "KZT", "TRY", "GEL"];
+
+export const CURRENCY_NAMES: Record<string, string> = {
+  RUB: "Российский рубль",
+  USD: "Доллар США",
+  EUR: "Евро",
+  GBP: "Фунт стерлингов",
+  KZT: "Казахстанский тенге",
+  TRY: "Турецкая лира",
+  GEL: "Грузинский лари",
+};
