@@ -19,6 +19,22 @@ export default function NewTripSheet({ onClose }: Props) {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
 
+  // Оверлей привязан к видимой области (visual viewport): при открытии
+  // клавиатуры она ужимается, и низ модалки (кнопка) остаётся над клавиатурой.
+  const [vv, setVv] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const v = window.visualViewport;
+    if (!v) return;
+    const onResize = () => setVv({ top: v.offsetTop, height: v.height });
+    onResize();
+    v.addEventListener("resize", onResize);
+    v.addEventListener("scroll", onResize);
+    return () => {
+      v.removeEventListener("resize", onResize);
+      v.removeEventListener("scroll", onResize);
+    };
+  }, []);
+
   // превью обложки
   useEffect(() => {
     if (!cover) {
@@ -55,10 +71,11 @@ export default function NewTripSheet({ onClose }: Props) {
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
         closing ? "animate-overlay-out" : "animate-overlay"
       }`}
+      style={vv ? { top: vv.top, height: vv.height, bottom: "auto" } : undefined}
       onClick={requestClose}
     >
       <div
-        className={`flex h-[96dvh] w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:h-[90dvh] sm:rounded-3xl ${
+        className={`flex h-full w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         onClick={(e) => e.stopPropagation()}
