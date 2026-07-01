@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { addMember, createTrip, setTripHero } from "@/lib/db";
-import { getMyEmoji, getMyName, setMyMemberId, setMyName } from "@/lib/identity";
-import { CURRENCIES } from "@/lib/format";
+import { getMyEmoji, getMyName } from "@/lib/identity";
+import { CURRENCIES, currencySymbol } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
 
 interface Props {
@@ -12,7 +12,6 @@ interface Props {
 
 export default function NewTripSheet({ onClose }: Props) {
   const [name, setName] = useState("");
-  const [myName, setMyNameInput] = useState(() => getMyName());
   const [currency, setCurrency] = useState("RUB");
   const [cover, setCover] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -33,13 +32,11 @@ export default function NewTripSheet({ onClose }: Props) {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !myName.trim()) return;
+    if (!name.trim() || creating) return;
     setCreating(true);
     try {
       const trip = await createTrip(name, currency);
-      const member = await addMember(trip.id, myName, getMyEmoji() || undefined);
-      setMyMemberId(trip.id, member.id);
-      setMyName(myName);
+      await addMember(trip.id, getMyName(), getMyEmoji() || undefined);
       if (cover) {
         try {
           await setTripHero(trip.id, cover);
@@ -53,25 +50,22 @@ export default function NewTripSheet({ onClose }: Props) {
     }
   }
 
-  const inputCls =
-    "w-full rounded-2xl border border-transparent bg-white px-4 py-3 text-base outline-none transition placeholder:text-muted focus:border-ink";
-
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
         closing ? "animate-overlay-out" : "animate-overlay"
       }`}
       onClick={requestClose}
     >
       <div
-        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
+        className={`flex h-[96dvh] w-full max-w-lg flex-col rounded-t-3xl bg-field px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:h-[90dvh] sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         onClick={(e) => e.stopPropagation()}
         {...sheetProps}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-extrabold">Новая поездка</h2>
+        {/* Верхняя панель: закрыть */}
+        <div className="mb-6 flex justify-end">
           <button
             onClick={requestClose}
             className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
@@ -81,22 +75,8 @@ export default function NewTripSheet({ onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleCreate} className="space-y-2">
-          <input
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Например, Грузия 2026"
-            className={inputCls}
-          />
-          <input
-            value={myName}
-            onChange={(e) => setMyNameInput(e.target.value)}
-            placeholder="Ваше имя (вы — первый участник)"
-            className={inputCls}
-          />
-
-          {/* Обложка (необязательно) */}
+        <form onSubmit={handleCreate} className="flex min-h-0 flex-1 flex-col">
+          {/* Иконка обложки над заголовком */}
           <input
             ref={coverInputRef}
             type="file"
@@ -107,46 +87,70 @@ export default function NewTripSheet({ onClose }: Props) {
           <button
             type="button"
             onClick={() => coverInputRef.current?.click()}
-            className="surface flex w-full items-center gap-3 overflow-hidden rounded-2xl p-2 text-left transition hover:bg-white/70"
+            className="mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white text-2xl text-muted transition hover:bg-white/70"
+            aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
           >
             {coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={coverUrl}
-                alt="Обложка"
-                className="h-12 w-16 shrink-0 rounded-xl object-cover"
-              />
+              <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
             ) : (
-              <span className="inset flex h-12 w-16 shrink-0 items-center justify-center rounded-xl text-xl">
-                🖼
-              </span>
+              "🖼"
             )}
-            <span className="text-sm font-semibold text-muted">
-              {cover ? "Обложка выбрана · заменить" : "Добавить обложку (необязательно)"}
-            </span>
           </button>
 
-          <div className="flex gap-2 pt-1">
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="rounded-full border border-transparent bg-white px-3 py-3 text-base outline-none focus:border-ink"
-              aria-label="Валюта"
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c} value={c} className="bg-white">
-                  {c}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              disabled={creating || !name.trim() || !myName.trim()}
-              className="btn-grad flex-1 rounded-full px-4 py-3 font-bold"
-            >
-              {creating ? "Создаю…" : "Создать"}
-            </button>
+          {/* Крупный ввод названия — как заголовок страницы */}
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Название"
+            className="w-full bg-transparent text-[40px] font-bold leading-[1.1] tracking-[-0.01em] outline-none placeholder:text-black/20"
+          />
+
+          {/* Выбор валюты под заголовком — маленькие аутлайновые кнопки */}
+          <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none]">
+            {CURRENCIES.map((c) => {
+              const on = c === currency;
+              return (
+                <button
+                  type="button"
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  className={`flex h-7 shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-xs font-bold transition ${
+                    on
+                      ? "border-ink text-ink"
+                      : "border-line text-muted hover:text-ink"
+                  }`}
+                >
+                  {currencySymbol(c)} {c}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Пустое пространство прижимает кнопку к низу (правый нижний угол) */}
+          <div className="min-h-12 flex-1" />
+
+          <button
+            type="submit"
+            disabled={creating || !name.trim()}
+            className="btn-grad flex h-14 w-14 items-center justify-center self-end rounded-full"
+            aria-label="Создать поездку"
+          >
+            {creating ? (
+              <span className="text-sm font-bold">…</span>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M5 12h14M13 6l6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
         </form>
       </div>
     </div>
