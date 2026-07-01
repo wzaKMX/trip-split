@@ -5,6 +5,7 @@ import { useTrips } from "@/hooks/useTripData";
 import { getMyEmoji, getMyName } from "@/lib/identity";
 import { supabaseConfigured } from "@/lib/supabase";
 import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 import TripCard from "@/components/TripCard";
 import NewTripSheet from "@/components/NewTripSheet";
 import Onboarding from "@/components/Onboarding";
@@ -29,13 +30,8 @@ export default function HomePage() {
         </div>
       )}
 
-      <header className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-[32px] font-black leading-tight">Поездки</h1>
-          <p className="mt-1 text-sm font-medium text-muted">
-            Делите общие траты — голосом, по чеку или вручную
-          </p>
-        </div>
+      <header className="mb-6 flex items-center justify-between gap-3">
+        <Logo height={28} />
         {me.name && (
           <button
             onClick={() => setEditingMe(true)}
@@ -43,7 +39,7 @@ export default function HomePage() {
             aria-label="Профиль"
             title={me.name}
           >
-            <Avatar name={me.name} emoji={me.emoji} size={44} ring={false} />
+            <Avatar name={me.name} emoji={me.emoji} size={36} ring={false} />
           </button>
         )}
       </header>
