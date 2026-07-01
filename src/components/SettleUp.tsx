@@ -12,7 +12,8 @@ interface Props {
 }
 
 export default function SettleUp({ transfers, members, currency }: Props) {
-  const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
+  const memberOf = (id: string) => members.find((m) => m.id === id);
+  const nameOf = (id: string) => memberOf(id)?.name ?? "?";
 
   if (transfers.length === 0) {
     return (
@@ -30,14 +31,14 @@ export default function SettleUp({ transfers, members, currency }: Props) {
           className="surface flex items-center justify-between rounded-2xl px-4 py-3"
         >
           <span className="flex items-center gap-2 text-[15px]">
-            <Avatar name={nameOf(t.from)} size={26} ring={false} />
+            <Avatar name={nameOf(t.from)} emoji={memberOf(t.from)?.emoji} size={26} ring={false} />
             <span className="text-muted">→</span>
-            <Avatar name={nameOf(t.to)} size={26} ring={false} />
+            <Avatar name={nameOf(t.to)} emoji={memberOf(t.to)?.emoji} size={26} ring={false} />
             <span className="ml-1 font-semibold">
               {nameOf(t.from)} → {nameOf(t.to)}
             </span>
           </span>
-          <span className="font-bold text-lime">{formatMoney(t.amount, currency)}</span>
+          <span className="font-bold text-pos">{formatMoney(t.amount, currency)}</span>
         </li>
       ))}
     </ul>

@@ -24,7 +24,8 @@ const SOURCE_LABEL: Record<Expense["source"], string> = {
 export default function ExpenseDetail({ expense, members, onDelete, onClose }: Props) {
   const [showReceipt, setShowReceipt] = useState(false);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
-  const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
+  const memberOf = (id: string) => members.find((m) => m.id === id);
+  const nameOf = (id: string) => memberOf(id)?.name ?? "?";
 
   const participants =
     expense.splitBetween.length > 0
@@ -42,19 +43,19 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
       onClick={requestClose}
     >
       <div
-        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#141414] p-5 sm:rounded-3xl ${
+        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         onClick={(e) => e.stopPropagation()}
         {...sheetProps}
       >
         <div className="mb-4 flex items-center justify-between">
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-bold text-muted">
+          <span className="surface rounded-full px-3 py-1 text-xs font-bold text-muted">
             {SOURCE_LABEL[expense.source]}
           </span>
           <button
             onClick={requestClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full surface text-lg text-muted transition hover:text-white"
+            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
             aria-label="Закрыть"
           >
             ✕
@@ -70,7 +71,7 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
 
         {/* Кто заплатил */}
         <div className="surface mt-5 flex items-center gap-3 rounded-2xl px-4 py-3">
-          <Avatar name={nameOf(expense.paidBy)} size={36} ring={false} />
+          <Avatar name={nameOf(expense.paidBy)} emoji={memberOf(expense.paidBy)?.emoji} size={36} ring={false} />
           <div>
             <p className="text-xs text-muted">Заплатил</p>
             <p className="font-bold">{nameOf(expense.paidBy)}</p>
@@ -94,7 +95,7 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
                 key={pid}
                 className="surface flex items-center gap-3 rounded-2xl px-4 py-2.5"
               >
-                <Avatar name={nameOf(pid)} size={28} ring={false} />
+                <Avatar name={nameOf(pid)} emoji={memberOf(pid)?.emoji} size={28} ring={false} />
                 <span className="font-medium">{nameOf(pid)}</span>
                 <span className="ml-auto text-sm font-semibold text-muted">
                   {formatMoney(perHead, expense.currency)}
@@ -108,7 +109,7 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
         {expense.receiptId && (
           <button
             onClick={() => setShowReceipt(true)}
-            className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 py-3 font-bold transition hover:bg-white/10"
+            className="btn-secondary mt-4 w-full rounded-full py-3 font-bold"
           >
             📷 Показать чек
           </button>
@@ -122,7 +123,7 @@ export default function ExpenseDetail({ expense, members, onDelete, onClose }: P
               requestClose();
             }
           }}
-          className="mt-3 w-full rounded-2xl border border-danger/30 bg-danger/10 py-3 font-bold text-danger transition hover:bg-danger/20"
+          className="mt-3 w-full rounded-full border border-danger/30 bg-danger/10 py-3 font-bold text-danger transition hover:bg-danger/20"
         >
           Удалить трату
         </button>

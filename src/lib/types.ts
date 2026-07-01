@@ -14,6 +14,7 @@ export interface Member {
   id: ID;
   tripId: ID;
   name: string;
+  emoji?: string; // эмодзи-аватар (из онбординга); если нет — рисуем инициалы
 }
 
 export type ExpenseSource = "manual" | "voice" | "receipt";

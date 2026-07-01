@@ -11,7 +11,7 @@ function TripPageInner() {
     return (
       <main className="p-8">
         <p className="mb-2 text-[15px] text-muted">Поездка не указана.</p>
-        <Link href="/" className="font-bold text-violet">
+        <Link href="/" className="font-bold text-ink underline">
           ← На главную
         </Link>
       </main>

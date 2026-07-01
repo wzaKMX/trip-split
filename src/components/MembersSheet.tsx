@@ -29,7 +29,7 @@ export default function MembersSheet({
       onClick={requestClose}
     >
       <div
-        className={`w-full max-w-lg rounded-t-3xl border border-white/10 bg-[#141414] p-5 sm:rounded-3xl ${
+        className={`w-full max-w-lg rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -39,7 +39,7 @@ export default function MembersSheet({
           <h2 className="text-xl font-extrabold">Участники</h2>
           <button
             onClick={requestClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full surface text-lg text-muted transition hover:text-white"
+            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
             aria-label="Закрыть"
           >
             ✕

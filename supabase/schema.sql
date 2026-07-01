@@ -13,7 +13,8 @@ create table if not exists trips (
 create table if not exists members (
   id       uuid primary key default gen_random_uuid(),
   trip_id  uuid not null references trips(id) on delete cascade,
-  name     text not null
+  name     text not null,
+  emoji    text
 );
 
 create table if not exists receipts (
@@ -52,6 +53,9 @@ alter publication supabase_realtime add table expenses;
 -- подписки с фильтром trip_id=eq.… не получают события удаления.
 alter table expenses replica identity full;
 alter table members  replica identity full;
+
+-- Миграция: эмодзи-аватар участника (онбординг). Применить на существующей базе:
+alter table members add column if not exists emoji text;
 
 -- ── RLS ───────────────────────────────────────────────────
 -- Доступ по неугадываемому UUID поездки в ссылке.

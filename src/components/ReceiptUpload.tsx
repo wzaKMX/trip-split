@@ -77,7 +77,7 @@ export default function ReceiptUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 font-bold text-white transition hover:bg-white/10 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-4 py-3.5 font-bold text-ink transition hover:bg-field disabled:opacity-50"
       >
         {busy
           ? `Распознаю чек… ${progress ? progress + "%" : ""}`

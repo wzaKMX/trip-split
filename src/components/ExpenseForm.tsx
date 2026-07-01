@@ -147,7 +147,7 @@ export default function ExpenseForm({
   }
 
   const inputCls =
-    "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base outline-none transition placeholder:text-white/30 focus:border-violet";
+    "w-full rounded-2xl border border-transparent bg-white px-4 py-3 text-base outline-none transition placeholder:text-muted focus:border-ink";
 
   return (
     <div
@@ -157,7 +157,7 @@ export default function ExpenseForm({
       onClick={requestClose}
     >
       <div
-        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#141414] p-5 shadow-2xl sm:rounded-3xl ${
+        className={`max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-field p-5 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -167,7 +167,7 @@ export default function ExpenseForm({
           <h2 className="text-xl font-extrabold">Новая трата</h2>
           <button
             onClick={requestClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full surface text-lg text-muted transition hover:text-white"
+            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
             aria-label="Закрыть"
           >
             ✕
@@ -197,14 +197,14 @@ export default function ExpenseForm({
             onError={setError}
           />
           <div className="flex items-center gap-3 py-1 text-xs text-muted">
-            <span className="h-px flex-1 bg-white/10" />
+            <span className="h-px flex-1 bg-line" />
             или заполните вручную
-            <span className="h-px flex-1 bg-white/10" />
+            <span className="h-px flex-1 bg-line" />
           </div>
         </div>
 
         {error && (
-          <div className="mb-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-3 py-2.5 text-sm text-amber-300">
+          <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-700">
             {error}
           </div>
         )}
@@ -239,7 +239,7 @@ export default function ExpenseForm({
                 className={inputCls}
               >
                 {Array.from(new Set([currency, ...CURRENCIES])).map((c) => (
-                  <option key={c} value={c} className="bg-bg">
+                  <option key={c} value={c} className="bg-white">
                     {c}
                   </option>
                 ))}
@@ -255,7 +255,7 @@ export default function ExpenseForm({
               className={inputCls}
             >
               {members.map((m) => (
-                <option key={m.id} value={m.id} className="bg-bg">
+                <option key={m.id} value={m.id} className="bg-white">
                   {m.name}
                 </option>
               ))}
@@ -272,7 +272,7 @@ export default function ExpenseForm({
                     splitBetween.length === members.length ? [] : members.map((m) => m.id)
                   )
                 }
-                className="text-xs font-bold text-violet"
+                className="text-xs font-bold text-ink underline"
               >
                 {splitBetween.length === members.length ? "Снять все" : "Выбрать всех"}
               </button>
@@ -287,8 +287,8 @@ export default function ExpenseForm({
                     onClick={() => toggleSplit(m.id)}
                     className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                       on
-                        ? "border-violet bg-violet/15 text-white"
-                        : "border-white/10 text-muted hover:border-white/30 hover:text-white"
+                        ? "border-ink bg-ink text-white"
+                        : "border-line bg-white text-ink hover:border-ink/40"
                     }`}
                   >
                     {m.name}
@@ -309,13 +309,13 @@ export default function ExpenseForm({
           </div>
 
           {receiptBlob && (
-            <p className="text-sm font-semibold text-lime">📎 Чек прикреплён к трате</p>
+            <p className="text-sm font-semibold text-pos">📎 Чек прикреплён к трате</p>
           )}
 
           <button
             type="submit"
             disabled={saving}
-            className="btn-grad w-full rounded-2xl px-4 py-3.5 text-base font-bold"
+            className="btn-grad w-full rounded-full px-4 py-3.5 text-base font-bold"
           >
             {saving ? "Сохраняю…" : "Сохранить трату"}
           </button>

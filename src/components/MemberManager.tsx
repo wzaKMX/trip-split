@@ -35,9 +35,9 @@ export default function MemberManager({
           {members.map((m) => (
             <li
               key={m.id}
-              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1 pl-1 pr-1.5 text-sm"
+              className="flex items-center gap-2 rounded-full bg-white py-1 pl-1 pr-1.5 text-sm"
             >
-              <Avatar name={m.name} size={24} ring={false} />
+              <Avatar name={m.name} emoji={m.emoji} size={24} ring={false} />
               <span className="font-medium">{m.name}</span>
               <button
                 onClick={() => {
@@ -46,7 +46,7 @@ export default function MemberManager({
                     removeMember(m.id);
                   }
                 }}
-                className="flex h-5 w-5 items-center justify-center rounded-full text-muted transition hover:bg-white/10 hover:text-danger"
+                className="flex h-5 w-5 items-center justify-center rounded-full text-muted transition hover:bg-field hover:text-danger"
                 aria-label={`Убрать ${m.name}`}
               >
                 ✕
@@ -61,12 +61,12 @@ export default function MemberManager({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Имя участника"
-          className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-base outline-none transition placeholder:text-white/30 focus:border-violet"
+          className="min-w-0 flex-1 rounded-full border border-transparent bg-white px-4 py-2.5 text-base outline-none transition placeholder:text-muted focus:border-ink"
         />
         <button
           type="submit"
           disabled={!name.trim()}
-          className="rounded-2xl bg-white/10 px-5 py-2.5 font-bold transition hover:bg-white/15 disabled:opacity-40"
+          className="btn-grad rounded-full px-5 py-2.5 font-bold disabled:opacity-40"
         >
           Добавить
         </button>
@@ -78,13 +78,13 @@ export default function MemberManager({
           <select
             value={currentMemberId ?? ""}
             onChange={(e) => onSelectCurrent(e.target.value || null)}
-            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 outline-none focus:border-violet"
+            className="min-w-0 flex-1 rounded-xl border border-transparent bg-white px-2 py-1.5 outline-none focus:border-ink"
           >
-            <option value="" className="bg-bg">
+            <option value="" className="bg-white">
               — не выбрано —
             </option>
             {members.map((m) => (
-              <option key={m.id} value={m.id} className="bg-bg">
+              <option key={m.id} value={m.id} className="bg-white">
                 {m.name}
               </option>
             ))}

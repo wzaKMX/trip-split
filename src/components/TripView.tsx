@@ -91,7 +91,7 @@ export default function TripView({ id }: { id: string }) {
     return (
       <main className="p-8">
         <p className="mb-2 text-[15px] text-muted">Поездка не найдена.</p>
-        <Link href="/" className="font-bold text-violet">
+        <Link href="/" className="font-bold text-ink underline">
           ← На главную
         </Link>
       </main>
@@ -188,7 +188,7 @@ export default function TripView({ id }: { id: string }) {
       >
         {members.length > 0 ? (
           <>
-            <AvatarStack names={members.map((m) => m.name)} size={26} />
+            <AvatarStack people={members} size={26} />
             <span className="text-sm font-medium text-muted">
               {members.length}{" "}
               {members.length === 1
@@ -199,14 +199,14 @@ export default function TripView({ id }: { id: string }) {
             </span>
           </>
         ) : (
-          <span className="rounded-full border border-violet/40 bg-violet/15 px-3 py-1.5 text-sm font-bold text-white">
+          <span className="rounded-full bg-ink px-3 py-1.5 text-sm font-bold text-white">
             ＋ Добавить участников
           </span>
         )}
       </button>
 
       {/* Балансовая карта — мои деньги */}
-      <div className="surface card-shadow mb-6 rounded-3xl p-5">
+      <div className="surface mb-6 rounded-3xl p-5">
         <p className="text-xs font-bold uppercase tracking-[0.72px] text-muted">
           {!hasMe
             ? "Всего по поездке"
@@ -221,10 +221,10 @@ export default function TripView({ id }: { id: string }) {
             !hasMe
               ? "gradient-num"
               : myNet > 0.005
-                ? "text-lime"
+                ? "text-pos"
                 : myNet < -0.005
-                  ? "text-danger"
-                  : "text-white"
+                  ? "text-neg"
+                  : "text-ink"
           }`}
         >
           {hasMe
@@ -238,21 +238,21 @@ export default function TripView({ id }: { id: string }) {
         ) : (
           <button
             onClick={() => setMembersOpen(true)}
-            className="mt-2 text-sm font-bold text-violet"
+            className="mt-2 text-sm font-bold text-ink underline"
           >
             Выберите, кто вы →
           </button>
         )}
         <button
           onClick={() => setTab("balances")}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-lime/30 bg-lime/15 py-3 font-bold text-lime transition hover:bg-lime/25"
+          className="btn-secondary mt-5 flex w-full items-center justify-center gap-2 rounded-full py-3 font-bold"
         >
           <span className="text-base">⇄</span> Рассчитаться
         </button>
       </div>
 
       {/* Вкладки */}
-      <div className="mb-4 flex gap-6 border-b border-white/10">
+      <div className="mb-4 flex gap-6 border-b border-line">
         {(
           [
             ["expenses", "Траты"],
@@ -264,8 +264,8 @@ export default function TripView({ id }: { id: string }) {
             onClick={() => setTab(key)}
             className={`-mb-px border-b-2 pb-3 text-[15px] font-bold transition ${
               tab === key
-                ? "border-violet text-white"
-                : "border-transparent text-muted hover:text-white"
+                ? "border-ink text-ink"
+                : "border-transparent text-muted hover:text-ink"
             }`}
           >
             {label}

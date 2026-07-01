@@ -1,15 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-ibm-plex-sans);
 
-  /* Палитра из Figma (тёмная тема) */
-  --color-bg: #0d0d0d;
-  --color-violet: #7c3aed;
-  --color-indigo: #4f46e5;
-  --color-lime: #a3e635;
-  --color-danger: #ef4444;
-  --color-muted: #9ca3af;
+  /* Светлая палитра (референс) */
+  --color-bg: #f7f7f7;
+  --color-surface: #ffffff; /* белые карточки и поля ввода */
+  --color-ink: #111111; /* тёмный текст и основные кнопки */
+  --color-field: #ececef; /* серый фон модалок и вложенных плашек — под ним всплывает белое */
+  --color-line: rgba(0, 0, 0, 0.08); /* хайрлайны/границы */
+  --color-muted: #8a8a8e;
+
+  /* Семантика балансов (приглушённая под светлый фон) */
+  --color-pos: #16a34a;
+  --color-neg: #e5484d;
+  --color-danger: #e5484d;
 }
 
 html {
@@ -18,68 +23,85 @@ html {
 
 body {
   font-family: var(--font-sans), system-ui, "Segoe UI", Arial, sans-serif;
-  color: #fff;
+  color: var(--color-ink);
   background: var(--color-bg);
 }
 
-/* Поверхность-карточка как в макете */
+/* Белая карточка на фоне страницы — плоская, без тени */
 .surface {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-surface);
+}
+
+/* Вложенная плашка/поле внутри белого листа — светло-серая заливка */
+.inset {
+  background: var(--color-field);
 }
 
 .hairline {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-line);
 }
 
-/* Градиентное число баланса */
+/* Крупное число баланса — сплошной тёмный */
 .gradient-num {
-  background-image: linear-gradient(to right, #7c3aed, #4f46e5);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-ink);
 }
 
-/* CTA-кнопка с фиолетовым градиентом */
+/* Основная кнопка — тёмная, полностью скруглённая (радиус в разметке) */
 .btn-grad {
-  background-image: linear-gradient(to right, #7c3aed, #4f46e5);
+  background: var(--color-ink);
   color: #fff;
   transition: filter 0.15s ease, transform 0.05s ease;
 }
 .btn-grad:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.7);
 }
 .btn-grad:active {
   transform: scale(0.985);
 }
 .btn-grad:disabled {
-  filter: grayscale(0.5) opacity(0.5);
+  filter: none;
+  opacity: 0.4;
+}
+
+/* Вторичная кнопка — белая с хайрлайном, тёмный текст */
+.btn-secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.btn-secondary:hover {
+  background: var(--color-field);
+}
+.btn-secondary:active {
+  transform: scale(0.985);
+}
+.btn-secondary:disabled {
+  opacity: 0.4;
 }
 
 /* Цветные чипы балансов */
 .chip-pos {
-  background: rgba(163, 230, 53, 0.1);
-  border: 1px solid rgba(163, 230, 53, 0.2);
-  color: #a3e635;
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--color-pos);
 }
 .chip-neg {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba(229, 72, 77, 0.12);
+  color: var(--color-neg);
 }
 .chip-neutral {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #9ca3af;
+  background: #ececee;
+  color: #6b7280;
 }
 
+/* Мягкая тень: только фото-карточки и плавающая кнопка (не белые блоки) */
 .card-shadow {
-  box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.22);
 }
 
 input,
 select {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* Анимации модалок */

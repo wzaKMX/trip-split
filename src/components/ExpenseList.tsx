@@ -70,10 +70,10 @@ export default function ExpenseList({ expenses, members, onDelete }: Props) {
             >
               <button
                 onClick={() => setSelected(e)}
-                className="surface flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition hover:bg-white/[0.07]"
+                className="surface flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition hover:bg-field"
               >
                 <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-xl"
+                  className="inset flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl"
                   aria-hidden
                 >
                   {SOURCE_ICON[e.source]}

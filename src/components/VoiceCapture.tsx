@@ -19,10 +19,10 @@ interface Props {
 
 // Цвет подсветки по типу сущности.
 const SPAN_CLS: Record<EntityType, string> = {
-  amount: "bg-lime/20 text-lime",
-  payer: "bg-violet/25 text-white",
-  member: "bg-sky-400/20 text-sky-300",
-  all: "bg-amber-400/20 text-amber-300",
+  amount: "bg-emerald-100 text-emerald-700",
+  payer: "bg-neutral-200 text-neutral-900",
+  member: "bg-sky-100 text-sky-700",
+  all: "bg-amber-100 text-amber-700",
 };
 
 const SWIPE_THRESHOLD = 60; // px вверх для раскрытия формы
@@ -158,7 +158,7 @@ export default function VoiceCapture({
       onClick={requestClose}
     >
       <div
-        className={`w-full max-w-lg rounded-t-3xl border border-white/10 bg-[#141414] px-5 pb-5 pt-3 shadow-2xl sm:rounded-3xl ${
+        className={`w-full max-w-lg rounded-t-3xl bg-field px-5 pb-5 pt-3 sm:rounded-3xl ${
           closing ? "animate-sheet-out" : "animate-sheet"
         }`}
         style={dragY ? { transform: `translateY(${-dragY}px)` } : undefined}
@@ -182,7 +182,7 @@ export default function VoiceCapture({
           </div>
           <button
             onClick={requestClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full surface text-lg text-muted transition hover:text-white"
+            className="surface flex h-9 w-9 items-center justify-center rounded-full text-lg text-muted transition hover:text-ink"
             aria-label="Закрыть"
           >
             ✕
@@ -190,11 +190,11 @@ export default function VoiceCapture({
         </div>
 
         {/* Расшифровка с подсветкой сущностей */}
-        <div className="min-h-[88px] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[17px] leading-relaxed">
+        <div className="surface min-h-[88px] rounded-2xl px-4 py-3 text-[17px] leading-relaxed">
           {transcript ? (
             <Highlighted text={transcript} spans={spans} />
           ) : (
-            <span className="text-white/30">
+            <span className="text-muted">
               Например: «я заплатил 1500 за такси на Аню и Петю»
             </span>
           )}
@@ -206,14 +206,14 @@ export default function VoiceCapture({
             {parsed.amount != null && (
               <span>
                 💰{" "}
-                <b className="text-white">
+                <b className="text-ink">
                   {formatMoney(parsed.amount, parsed.currency ?? baseCurrency)}
                 </b>
               </span>
             )}
             <span>
               👥{" "}
-              <b className="text-white">
+              <b className="text-ink">
                 {splitIds.length === members.length
                   ? "на всех"
                   : splitIds
@@ -226,7 +226,7 @@ export default function VoiceCapture({
         )}
 
         {error && (
-          <div className="mt-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-3 py-2.5 text-sm text-amber-300">
+          <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-700">
             {error}
           </div>
         )}
@@ -235,10 +235,10 @@ export default function VoiceCapture({
         <button
           type="button"
           onClick={listening ? stop : start}
-          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 font-bold transition ${
+          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-full border px-4 py-3 font-bold transition ${
             listening
-              ? "border-danger/40 bg-danger/15 text-white"
-              : "border-violet/40 bg-violet/15 text-white hover:bg-violet/25"
+              ? "border-danger/30 bg-danger/10 text-neg"
+              : "border-line bg-white text-ink hover:bg-field"
           }`}
         >
           {listening ? "■ Остановить" : "🎤 Записать заново"}
@@ -249,7 +249,7 @@ export default function VoiceCapture({
           type="button"
           onClick={quickSave}
           disabled={!canSave}
-          className="btn-grad mt-2 w-full rounded-2xl px-4 py-3.5 text-base font-bold disabled:opacity-50"
+          className="btn-grad mt-2 w-full rounded-full px-4 py-3.5 text-base font-bold disabled:opacity-50"
         >
           {saving ? "Сохраняю…" : "✓ Сохранить трату"}
         </button>
@@ -258,7 +258,7 @@ export default function VoiceCapture({
         <button
           type="button"
           onClick={expand}
-          className="mt-3 flex w-full flex-col items-center gap-0.5 py-1 text-muted transition hover:text-white"
+          className="mt-3 flex w-full flex-col items-center gap-0.5 py-1 text-muted transition hover:text-ink"
         >
           <span className="text-lg leading-none">⌃</span>
           <span className="text-xs font-medium">

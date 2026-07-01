@@ -25,7 +25,12 @@ type TripRow = {
   hero_path: string | null;
   created_at: string;
 };
-type MemberRow = { id: string; trip_id: string; name: string };
+type MemberRow = {
+  id: string;
+  trip_id: string;
+  name: string;
+  emoji?: string | null;
+};
 type ExpenseRow = {
   id: string;
   trip_id: string;
@@ -58,7 +63,7 @@ export function rowToTrip(r: TripRow): Trip {
   };
 }
 export function rowToMember(r: MemberRow): Member {
-  return { id: r.id, tripId: r.trip_id, name: r.name };
+  return { id: r.id, tripId: r.trip_id, name: r.name, emoji: r.emoji ?? undefined };
 }
 export function rowToExpense(r: ExpenseRow): Expense {
   return {
@@ -153,14 +158,23 @@ export async function getTrip(tripId: string): Promise<Trip | null> {
 
 // ── Участники ──
 
-export async function addMember(tripId: string, name: string): Promise<Member> {
+export async function addMember(
+  tripId: string,
+  name: string,
+  emoji?: string
+): Promise<Member> {
   const sb = getSupabase();
   const id = newId();
-  const { data, error } = await sb
-    .from("members")
-    .insert({ id, trip_id: tripId, name: name.trim() })
-    .select()
-    .single();
+  const payload: Record<string, unknown> = { id, trip_id: tripId, name: name.trim() };
+  if (emoji) payload.emoji = emoji;
+
+  let { data, error } = await sb.from("members").insert(payload).select().single();
+
+  // Колонки emoji может ещё не быть (миграция не применена) — вставляем без неё.
+  if (error && emoji) {
+    delete payload.emoji;
+    ({ data, error } = await sb.from("members").insert(payload).select().single());
+  }
   if (error) throw error;
   return rowToMember(data as MemberRow);
 }

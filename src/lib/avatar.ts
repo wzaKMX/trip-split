@@ -33,6 +33,14 @@ export function coverFor(seed: string): string {
   return COVERS[hash(seed) % COVERS.length];
 }
 
+/** Предлагаемые эмодзи-аватары для онбординга. */
+export const AVATAR_EMOJIS = [
+  "😀", "😎", "🤓", "🥳", "😺", "🐶",
+  "🦊", "🐼", "🐨", "🐯", "🦁", "🐸",
+  "🐵", "🦄", "🐙", "🦉", "🐢", "🐷",
+  "🐣", "🦋", "🌟", "🍕", "🚀", "🎧",
+];
+
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";

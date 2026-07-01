@@ -16,30 +16,33 @@ export default function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link
       href={`/trip/?id=${trip.id}`}
-      className="card-shadow relative flex h-40 flex-col overflow-hidden rounded-3xl"
+      className="card-shadow relative flex aspect-[3/4] flex-col items-center justify-center overflow-hidden rounded-3xl p-4 text-center"
       style={{ backgroundImage: coverFor(trip.id) }}
     >
-      {/* затемнение */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/80" />
+      {/* затемнение для читаемости центрированного текста */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/35 to-black/70" />
+
       <span className="absolute right-3 top-3 z-10 rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
         {trip.baseCurrency}
       </span>
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-gradient-to-b from-transparent to-black/90 px-4 pb-3.5 pt-3">
-        <p className="text-base font-extrabold leading-tight text-white">{trip.name}</p>
-        <div className="flex items-center justify-between">
-          {members.length > 0 ? (
-            <AvatarStack names={members.map((m) => m.name)} />
-          ) : (
-            <span className="text-xs text-white/70">Нет участников</span>
-          )}
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-black ${
-              total > 0 ? "chip-pos" : "chip-neutral"
-            }`}
-          >
-            {total > 0 ? formatMoney(total, trip.baseCurrency) : "—"}
-          </span>
-        </div>
+
+      {/* Название + участники — по центру карточки */}
+      <div className="relative z-10 flex flex-col items-center gap-3">
+        <p className="text-xl font-extrabold leading-tight text-white drop-shadow">
+          {trip.name}
+        </p>
+        {members.length > 0 ? (
+          <AvatarStack people={members} size={30} />
+        ) : (
+          <span className="text-xs text-white/70">Нет участников</span>
+        )}
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-black ${
+            total > 0 ? "chip-pos" : "chip-neutral"
+          }`}
+        >
+          {total > 0 ? formatMoney(total, trip.baseCurrency) : "—"}
+        </span>
       </div>
     </Link>
   );

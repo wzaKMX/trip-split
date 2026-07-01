@@ -12,7 +12,8 @@ interface Props {
 }
 
 export default function BalancesView({ balances, members, currency }: Props) {
-  const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
+  const memberOf = (id: string) => members.find((m) => m.id === id);
+  const nameOf = (id: string) => memberOf(id)?.name ?? "?";
   const sorted = [...balances].sort((a, b) => b.net - a.net);
 
   return (
@@ -27,13 +28,13 @@ export default function BalancesView({ balances, members, currency }: Props) {
             className="surface flex items-center justify-between rounded-2xl px-4 py-3"
           >
             <span className="flex items-center gap-2.5">
-              <Avatar name={name} size={28} ring={false} />
+              <Avatar name={name} emoji={memberOf(b.memberId)?.emoji} size={28} ring={false} />
               <span className="font-semibold">{name}</span>
             </span>
             <span className="text-right">
               <span
                 className={`font-bold ${
-                  positive ? "text-lime" : negative ? "text-danger" : "text-muted"
+                  positive ? "text-pos" : negative ? "text-neg" : "text-muted"
                 }`}
               >
                 {positive && "+"}

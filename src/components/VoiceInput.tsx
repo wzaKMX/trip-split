@@ -64,10 +64,10 @@ export default function VoiceInput({
         type="button"
         onClick={listening ? stop : start}
         disabled={busy}
-        className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3.5 font-bold transition disabled:opacity-50 ${
+        className={`flex w-full items-center justify-center gap-2 rounded-full border px-4 py-3.5 font-bold transition disabled:opacity-50 ${
           listening
-            ? "border-danger/40 bg-danger/15 text-white"
-            : "border-violet/40 bg-violet/15 text-white hover:bg-violet/25"
+            ? "border-danger/30 bg-danger/10 text-neg"
+            : "border-line bg-white text-ink hover:bg-field"
         }`}
       >
         {busy ? (
