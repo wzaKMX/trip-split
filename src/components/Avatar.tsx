@@ -1,19 +1,22 @@
 import { avatarColor, initials } from "@/lib/avatar";
+import { avatarImageSrc } from "@/lib/avatarImages";
 
 interface Props {
   name: string;
+  /** id картинки-аватара (напр. "a3") или легаси-эмодзи. */
   emoji?: string;
   seed?: string;
   size?: number;
   ring?: boolean;
 }
 
-/** Кружок-аватар: эмодзи (если выбран) или инициалы с цветом из имени. */
+/** Кружок-аватар: картинка-аватар, легаси-эмодзи или инициалы с цветом из имени. */
 export default function Avatar({ name, emoji, seed, size = 24, ring = true }: Props) {
+  const imgSrc = avatarImageSrc(emoji);
   const bg = avatarColor(seed ?? name);
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full font-bold text-white ${
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-white ${
         ring ? "border-2 border-white" : ""
       }`}
       style={{
@@ -24,7 +27,12 @@ export default function Avatar({ name, emoji, seed, size = 24, ring = true }: Pr
       }}
       title={name}
     >
-      {emoji || initials(name)}
+      {imgSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={imgSrc} alt="" className="h-full w-full object-cover" />
+      ) : (
+        emoji || initials(name)
+      )}
     </div>
   );
 }

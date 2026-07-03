@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AVATAR_EMOJIS, avatarColor } from "@/lib/avatar";
+import { AVATAR_IMAGES, avatarImageSrc } from "@/lib/avatarImages";
 import { getMyEmoji, getMyName, setMyEmoji, setMyName } from "@/lib/identity";
 
 interface Props {
@@ -14,8 +14,9 @@ interface Props {
 
 export default function Onboarding({ onDone, editing, onCancel }: Props) {
   const [name, setName] = useState(() => getMyName());
-  const [emoji, setEmoji] = useState(() => getMyEmoji() || AVATAR_EMOJIS[0]);
+  const [emoji, setEmoji] = useState(() => getMyEmoji() || AVATAR_IMAGES[0].id);
   const canSave = name.trim().length > 0 && !!emoji;
+  const previewSrc = avatarImageSrc(emoji);
 
   function save() {
     if (!canSave) return;
@@ -38,11 +39,11 @@ export default function Onboarding({ onDone, editing, onCancel }: Props) {
 
         {/* Превью аватара */}
         <div className="mb-6 flex justify-center">
-          <div
-            className="flex h-24 w-24 items-center justify-center rounded-[40%] text-5xl"
-            style={{ background: avatarColor(name || emoji) }}
-          >
-            {emoji}
+          <div className="h-24 w-24 overflow-hidden rounded-full bg-white shadow-sm">
+            {previewSrc && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewSrc} alt="" className="h-full w-full object-cover" />
+            )}
           </div>
         </div>
 
@@ -55,18 +56,21 @@ export default function Onboarding({ onDone, editing, onCancel }: Props) {
         />
 
         <p className="mb-2 mt-7 text-sm font-bold">Выберите аватар</p>
-        <div className="grid grid-cols-6 gap-2">
-          {AVATAR_EMOJIS.map((e) => (
+        <div className="grid grid-cols-4 gap-3">
+          {AVATAR_IMAGES.map((a) => (
             <button
-              key={e}
+              key={a.id}
               type="button"
-              onClick={() => setEmoji(e)}
-              className={`flex aspect-square items-center justify-center rounded-2xl text-2xl transition ${
-                emoji === e ? "bg-ink ring-2 ring-ink" : "surface hover:bg-white/70"
+              onClick={() => setEmoji(a.id)}
+              className={`aspect-square overflow-hidden rounded-full bg-white transition ${
+                emoji === a.id
+                  ? "ring-2 ring-ink ring-offset-2 ring-offset-bg"
+                  : "opacity-90 hover:opacity-100"
               }`}
-              aria-pressed={emoji === e}
+              aria-pressed={emoji === a.id}
             >
-              {e}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={a.src} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
