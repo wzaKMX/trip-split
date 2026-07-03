@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import OnboardingGate from "@/components/OnboardingGate";
 
@@ -7,6 +7,12 @@ const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
   subsets: ["latin", "cyrillic"],
   weight: ["400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "cyrillic"],
+  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${ibmPlexSans.variable} h-full antialiased`}>
+    <html
+      lang="ru"
+      className={`${ibmPlexSans.variable} ${playfair.variable} h-full antialiased`}
+    >
       <body className="min-h-full bg-bg text-ink">
         <OnboardingGate>{children}</OnboardingGate>
       </body>

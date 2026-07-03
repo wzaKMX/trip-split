@@ -99,6 +99,11 @@ body {
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.22);
 }
 
+/* Заголовочный шрифт (имя поездки на хиро) */
+.font-playfair {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
 input,
 select {
   color-scheme: light;

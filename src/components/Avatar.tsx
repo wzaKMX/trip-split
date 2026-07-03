@@ -13,7 +13,7 @@ export default function Avatar({ name, emoji, seed, size = 24, ring = true }: Pr
   const bg = avatarColor(seed ?? name);
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-[40%] font-bold text-white ${
+      className={`flex shrink-0 items-center justify-center rounded-full font-bold text-white ${
         ring ? "border-2 border-white" : ""
       }`}
       style={{
@@ -52,7 +52,7 @@ export function AvatarStack({
       ))}
       {rest > 0 && (
         <div
-          className="flex items-center justify-center rounded-[40%] border-2 border-white bg-ink font-bold text-white"
+          className="flex items-center justify-center rounded-full border-2 border-white bg-ink font-bold text-white"
           style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
         >
           +{rest}
