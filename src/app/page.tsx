@@ -30,11 +30,11 @@ export default function HomePage() {
           {me.name && (
             <button
               onClick={() => setEditingMe(true)}
-              className="shrink-0"
+              className="card-shadow shrink-0 rounded-full"
               aria-label="Профиль"
               title={me.name}
             >
-              <Avatar name={me.name} emoji={me.emoji} size={36} ring={false} />
+              <Avatar name={me.name} emoji={me.emoji} size={44} ring={true} />
             </button>
           )}
         </div>

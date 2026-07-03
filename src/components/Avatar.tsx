@@ -22,7 +22,7 @@ export default function Avatar({ name, emoji, seed, size = 24, ring = true }: Pr
       style={{
         width: size,
         height: size,
-        background: bg,
+        background: imgSrc ? "#fff" : bg,
         fontSize: Math.round(size * (emoji ? 0.58 : 0.4)),
       }}
       title={name}
