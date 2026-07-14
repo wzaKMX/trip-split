@@ -157,6 +157,21 @@ select {
   will-change: transform;
 }
 
+/* Плавный вход экрана (переход на страницу поездки) */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-page-in {
+  animation: pageIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Удаление строки траты: уезжает вбок и схлопывается по высоте */
 @keyframes expenseOut {
   0% {
@@ -183,6 +198,7 @@ select {
 @media (prefers-reduced-motion: reduce) {
   .animate-overlay,
   .animate-sheet,
+  .animate-page-in,
   .animate-expense-out {
     animation: none;
   }

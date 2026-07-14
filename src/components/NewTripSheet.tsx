@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { addMember, createTrip, setTripHero } from "@/lib/db";
 import { getMyEmoji, getMyName } from "@/lib/identity";
 import { CURRENCIES, currencySymbol } from "@/lib/format";
 import { useSheetClose } from "@/hooks/useSheetClose";
-import { useDragToClose } from "@/hooks/useDragToClose";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function NewTripSheet({ onClose }: Props) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("RUB");
   const [cover, setCover] = useState<File | null>(null);
@@ -20,7 +21,6 @@ export default function NewTripSheet({ onClose }: Props) {
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const { closing, requestClose, sheetProps } = useSheetClose(onClose);
-  const { scrollRef, dragHandlers, dragStyle } = useDragToClose(onClose);
 
   // Плашка привязана к видимой области (visual viewport): при открытии
   // клавиатуры она ужимается, и кнопка сохранения остаётся над клавиатурой.
@@ -63,7 +63,8 @@ export default function NewTripSheet({ onClose }: Props) {
           // обложка не критична — поездка уже создана
         }
       }
-      requestClose();
+      // сразу открываем созданную поездку (плавный вход анимируется на её экране)
+      router.push(`/trip/?id=${trip.id}`);
     } finally {
       setCreating(false);
     }
@@ -71,30 +72,18 @@ export default function NewTripSheet({ onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 ${
-        closing ? "animate-overlay-out" : "animate-overlay"
-      }`}
+      className="fixed inset-0 z-50 bg-field"
       style={vv ? { top: vv.top, height: vv.height, bottom: "auto" } : undefined}
-      onClick={requestClose}
     >
       <div
-        ref={scrollRef}
-        className={`w-full max-w-lg rounded-t-3xl bg-field sm:rounded-3xl ${
-          closing ? "animate-sheet-out" : "animate-sheet"
-        }`}
-        style={{ height: "100%", ...dragStyle }}
-        onClick={(e) => e.stopPropagation()}
-        {...dragHandlers}
+        className={`h-full w-full ${closing ? "animate-sheet-out" : "animate-sheet"}`}
         {...sheetProps}
       >
       <form
         onSubmit={handleCreate}
-        className="flex h-full flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3"
+        className="mx-auto flex h-full max-w-lg flex-col px-5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]"
       >
-        {/* Грабер */}
-        <div className="mx-auto mb-3 h-1 w-10 shrink-0 rounded-full bg-black/15" />
-
-        {/* Верхняя панель: отмена · заголовок · обложка */}
+        {/* Верхняя панель: обложка (слева) · заголовок · закрыть (справа) */}
         <input
           ref={coverInputRef}
           type="file"
@@ -106,26 +95,33 @@ export default function NewTripSheet({ onClose }: Props) {
           <div className="justify-self-start">
             <button
               type="button"
-              onClick={requestClose}
-              className="surface rounded-full px-4 py-2 text-sm font-bold text-ink transition hover:bg-white/70"
-            >
-              Отмена
-            </button>
-          </div>
-          <h2 className="justify-self-center text-base font-extrabold">Новая поездка</h2>
-          <div className="justify-self-end">
-            <button
-              type="button"
               onClick={() => coverInputRef.current?.click()}
-              className="surface flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-lg text-muted transition hover:text-ink"
+              className="card-shadow flex h-14 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white text-muted transition hover:text-ink"
               aria-label={cover ? "Заменить обложку" : "Добавить обложку"}
             >
               {coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coverUrl} alt="Обложка" className="h-full w-full object-cover" />
               ) : (
-                "🖼"
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="8.5" cy="8.5" r="1.6" fill="currentColor" />
+                  <path d="M21 15l-4.5-4.5L6 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               )}
+            </button>
+          </div>
+          <h2 className="justify-self-center whitespace-nowrap text-[15px] font-bold leading-tight tracking-[-0.005em]">Новая поездка</h2>
+          <div className="justify-self-end">
+            <button
+              type="button"
+              onClick={requestClose}
+              className="surface flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-white/70"
+              aria-label="Закрыть"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </button>
           </div>
         </div>

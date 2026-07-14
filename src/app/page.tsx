@@ -69,7 +69,7 @@ export default function HomePage() {
         <button
           onClick={() => setAdding(true)}
           style={{ background: "#292929" }}
-          className="btn-grad card-shadow inline-flex h-16 items-center justify-center gap-2 rounded-full px-6 text-base font-bold text-white"
+          className="btn-grad inline-flex h-16 items-center justify-center gap-2 rounded-full px-6 text-base font-bold text-white"
         >
           Новая поездка
         </button>

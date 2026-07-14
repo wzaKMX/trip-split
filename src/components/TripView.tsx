@@ -94,7 +94,7 @@ export default function TripView({ id }: { id: string }) {
     : 0;
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 pb-28 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+    <main className="animate-page-in mx-auto w-full max-w-md px-5 pb-28 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
       {/* Скрытый инпут смены фото */}
       <input
         ref={heroInputRef}
@@ -119,7 +119,7 @@ export default function TripView({ id }: { id: string }) {
             <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Link>
-        <h1 className="font-playfair truncate text-center text-[30px] font-bold leading-tight text-ink">
+        <h1 className="truncate text-center text-[15px] font-bold leading-tight tracking-[-0.005em] text-ink">
           {trip.name}
         </h1>
         <button
@@ -276,7 +276,7 @@ export default function TripView({ id }: { id: string }) {
         <button
           onClick={() => setVoiceOpen(true)}
           disabled={!canAdd}
-          className="btn-grad card-shadow flex w-full items-center justify-center gap-2 rounded-full px-4 py-4 text-base font-bold"
+          className="btn-grad flex h-16 w-full items-center justify-center gap-2 rounded-full px-6 text-base font-bold"
         >
           {canAdd ? "🎤 Сказать трату голосом" : "Сначала добавьте участников"}
         </button>
