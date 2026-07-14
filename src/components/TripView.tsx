@@ -32,6 +32,7 @@ export default function TripView({ id }: { id: string }) {
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [heroBusy, setHeroBusy] = useState(false);
   const heroInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +73,30 @@ export default function TripView({ id }: { id: string }) {
     }
   }
 
+  // Ссылка-приглашение = URL текущей поездки (общий бэкенд, откроется у всех).
+  async function copyInvite() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // буфер недоступен — тихо игнорируем
+    }
+  }
+
+  async function shareInvite() {
+    const url = window.location.href;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ url });
+        return;
+      } catch {
+        // шеринг отменили — падаем в копирование
+      }
+    }
+    copyInvite();
+  }
+
   if (trip === undefined || members === undefined || expenses === undefined) {
     return <main className="p-8 text-sm text-muted">Загрузка…</main>;
   }
@@ -108,34 +133,56 @@ export default function TripView({ id }: { id: string }) {
         }}
       />
 
-      {/* Шапка: [обложка] имя (Playfair) · «ещё» · закрыть */}
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      {/* Шапка: назад · [обложка] имя (по центру) · поделиться + кебаб */}
+      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+        <button
+          onClick={() => router.push("/")}
+          aria-label="Назад"
+          className="flex h-10 w-10 items-center justify-center text-ink transition active:scale-90"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div className="flex min-w-0 items-center justify-center gap-2">
           {trip.heroPath && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={receiptUrl(trip.heroPath)}
               alt=""
-              className="h-11 w-11 shrink-0 rounded-2xl object-cover"
+              className="h-8 w-8 shrink-0 rounded-lg object-cover"
             />
           )}
-          <h1 className="font-playfair min-w-0 truncate py-0.5 text-[28px] font-normal leading-[1.3] text-ink">
+          <h1 className="font-playfair min-w-0 truncate py-0.5 text-xl font-normal leading-[1.3] text-ink">
             {trip.name}
           </h1>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {/* «Ещё» — обложка / удаление */}
+        <div className="flex shrink-0 items-center">
+          {/* Поделиться ссылкой */}
+          <button
+            onClick={shareInvite}
+            aria-label="Поделиться ссылкой"
+            className="flex h-10 w-10 items-center justify-center text-ink transition active:scale-90"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M12 15V3m0 0L8 7m4-4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 11v8a1 1 0 001 1h12a1 1 0 001-1v-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          {/* Кебаб — настройки поездки */}
           <div className="relative">
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Ещё"
-              className="surface flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-white/70"
+              aria-label="Настройки"
+              className="flex h-10 w-10 items-center justify-center text-ink transition active:scale-90"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <circle cx="5" cy="12" r="2" />
+                <circle cx="12" cy="5" r="2" />
                 <circle cx="12" cy="12" r="2" />
-                <circle cx="19" cy="12" r="2" />
+                <circle cx="12" cy="19" r="2" />
               </svg>
             </button>
 
@@ -143,6 +190,16 @@ export default function TripView({ id }: { id: string }) {
               <>
                 <div className="fixed inset-0 z-[1]" onClick={() => setMenuOpen(false)} />
                 <div className="absolute right-0 top-full z-[2] mt-2 w-52 overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_16px_44px_-12px_rgba(0,0,0,0.35)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setMembersOpen(true);
+                    }}
+                    className="flex w-full items-center rounded-xl px-3.5 py-2.5 text-left text-sm font-bold text-ink transition hover:bg-field"
+                  >
+                    Участники
+                  </button>
                   <button
                     type="button"
                     disabled={heroBusy}
@@ -170,24 +227,13 @@ export default function TripView({ id }: { id: string }) {
               </>
             )}
           </div>
-
-          {/* Закрыть — на главную */}
-          <button
-            onClick={() => router.push("/")}
-            aria-label="Закрыть"
-            className="surface flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-white/70"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-          </button>
         </div>
       </header>
 
       {/* Участники · баланс — две карточки */}
       <div className="mt-10 grid grid-cols-2 gap-1">
         <button
-          onClick={() => setMembersOpen(true)}
+          onClick={copyInvite}
           className="surface flex h-16 flex-col items-center justify-center rounded-3xl px-5 text-center"
         >
           <div className="flex items-center">
@@ -300,6 +346,15 @@ export default function TripView({ id }: { id: string }) {
           {canAdd ? "🎤 Сказать трату голосом" : "Сначала добавьте участников"}
         </button>
       </div>
+
+      {/* Тост «ссылка скопирована» */}
+      {copied && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-24 z-40 flex justify-center px-5">
+          <div className="card-shadow rounded-full bg-ink px-4 py-2 text-sm font-bold text-white">
+            Ссылка на приглашение скопирована
+          </div>
+        </div>
+      )}
 
       {voiceOpen && (
         <VoiceCapture
