@@ -11,7 +11,6 @@ import {
 } from "@/hooks/useTripData";
 import { deleteExpense, deleteTrip, receiptUrl, setTripHero } from "@/lib/db";
 import { computeBalances, minimizeTransfers, totalSpent } from "@/lib/settle";
-import { coverFor } from "@/lib/avatar";
 import { formatMoney } from "@/lib/format";
 import MembersSheet from "@/components/MembersSheet";
 import VoiceCapture from "@/components/VoiceCapture";
@@ -32,6 +31,7 @@ export default function TripView({ id }: { id: string }) {
   const [tab, setTab] = useState<Tab>("expenses");
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [heroBusy, setHeroBusy] = useState(false);
   const heroInputRef = useRef<HTMLInputElement>(null);
@@ -108,114 +108,133 @@ export default function TripView({ id }: { id: string }) {
         }}
       />
 
-      {/* Шапка: назад · имя (Playfair) · удалить */}
-      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-        <Link
-          href="/"
-          aria-label="Назад"
-          className="flex h-10 w-10 items-center justify-center text-ink transition active:scale-90"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-        <h1 className="truncate text-center text-[15px] font-bold leading-tight tracking-[-0.005em] text-ink">
-          {trip.name}
-        </h1>
-        <button
-          onClick={() => {
-            if (confirm(`Удалить поездку «${trip.name}» со всеми тратами?`)) {
-              deleteTrip(trip.id).then(() => router.push("/"));
-            }
-          }}
-          aria-label="Удалить поездку"
-          className="flex h-10 w-10 items-center justify-center text-ink transition hover:text-danger active:scale-90"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+      {/* Шапка: [обложка] имя (Playfair) · «ещё» · закрыть */}
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          {trip.heroPath && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={receiptUrl(trip.heroPath)}
+              alt=""
+              className="h-11 w-11 shrink-0 rounded-2xl object-cover"
+            />
+          )}
+          <h1 className="font-playfair min-w-0 truncate py-0.5 text-[28px] font-normal leading-[1.3] text-ink">
+            {trip.name}
+          </h1>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          {/* «Ещё» — обложка / удаление */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Ещё"
+              className="surface flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-white/70"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <circle cx="5" cy="12" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="19" cy="12" r="2" />
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-[1]" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-full z-[2] mt-2 w-52 overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_16px_44px_-12px_rgba(0,0,0,0.35)]">
+                  <button
+                    type="button"
+                    disabled={heroBusy}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      heroInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center rounded-xl px-3.5 py-2.5 text-left text-sm font-bold text-ink transition hover:bg-field disabled:opacity-60"
+                  >
+                    {trip.heroPath ? "Сменить обложку" : "Добавить обложку"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (confirm(`Удалить поездку «${trip.name}» со всеми тратами?`)) {
+                        deleteTrip(trip.id).then(() => router.push("/"));
+                      }
+                    }}
+                    className="flex w-full items-center rounded-xl px-3.5 py-2.5 text-left text-sm font-bold text-danger transition hover:bg-field"
+                  >
+                    Удалить поездку
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Закрыть — на главную */}
+          <button
+            onClick={() => router.push("/")}
+            aria-label="Закрыть"
+            className="surface flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-white/70"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
       </header>
 
-      {/* Фото (клик — сменить) · участники + баланс */}
-      <div className="mt-6 grid grid-cols-2 items-center gap-5">
-        <div className="flex justify-center">
-          <button
-            onClick={() => heroInputRef.current?.click()}
-            disabled={heroBusy}
-            aria-label="Сменить фото"
-            className="card-shadow relative aspect-[3/4] w-36 max-w-full -rotate-6 overflow-hidden rounded-3xl transition active:scale-[0.98] disabled:opacity-70"
-          >
-            {trip.heroPath ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={receiptUrl(trip.heroPath)}
-                alt={trip.name}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0" style={{ backgroundImage: coverFor(trip.id) }} />
-            )}
-          </button>
-        </div>
-
-        <div className="flex flex-col justify-center gap-8">
-          {/* Участники */}
-          <button onClick={() => setMembersOpen(true)} className="text-left">
-            <div className="flex items-center">
-              {members.slice(0, 3).map((m, i) => (
-                <div key={m.id} style={{ marginLeft: i === 0 ? 0 : -10 }}>
-                  <Avatar name={m.name} emoji={m.emoji} size={44} />
-                </div>
-              ))}
-              <span
-                className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-ink text-xl text-white"
-                style={{ marginLeft: members.length > 0 ? -10 : 0 }}
-              >
-                +
-              </span>
-            </div>
-            <p className="mt-2.5 text-base font-bold text-ink">
-              {members.length}{" "}
-              {members.length === 1
-                ? "участник"
-                : members.length < 5
-                  ? "участника"
-                  : "участников"}
-            </p>
-          </button>
-
-          {/* Баланс */}
-          <button
-            onClick={() => (hasMe ? setTab("balances") : setMembersOpen(true))}
-            className="text-left"
-          >
-            <p
-              className={`text-[34px] font-black leading-none ${
-                !hasMe
-                  ? "text-ink"
-                  : myNet > 0.005
-                    ? "text-pos"
-                    : myNet < -0.005
-                      ? "text-neg"
-                      : "text-ink"
-              }`}
+      {/* Участники · баланс — две карточки */}
+      <div className="mt-10 grid grid-cols-2 gap-1">
+        <button
+          onClick={() => setMembersOpen(true)}
+          className="surface flex h-16 flex-col items-center justify-center rounded-3xl px-5 text-center"
+        >
+          <div className="flex items-center">
+            {members.slice(0, 3).map((m, i) => (
+              <div key={m.id} style={{ marginLeft: i === 0 ? 0 : -10 }}>
+                <Avatar name={m.name} emoji={m.emoji} size={36} />
+              </div>
+            ))}
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-ink text-base text-white"
+              style={{ marginLeft: members.length > 0 ? -10 : 0 }}
             >
-              {hasMe
-                ? formatMoney(Math.abs(myNet), trip.baseCurrency)
-                : formatMoney(total, trip.baseCurrency)}
-            </p>
-            <p className="mt-1.5 text-base font-bold text-muted">
-              {!hasMe
-                ? "всего"
+              +
+            </span>
+          </div>
+          <p className="mt-1 text-xs font-bold text-muted">участники</p>
+        </button>
+
+        <button
+          onClick={() => (hasMe ? setTab("balances") : setMembersOpen(true))}
+          className="surface flex h-16 flex-col items-center justify-center rounded-3xl px-5 text-center"
+        >
+          <p
+            className={`text-2xl font-black leading-none ${
+              !hasMe
+                ? "text-ink"
                 : myNet > 0.005
-                  ? "вам должны"
+                  ? "text-pos"
                   : myNet < -0.005
-                    ? "вы должны"
-                    : "вы в расчёте"}
-            </p>
-          </button>
-        </div>
+                    ? "text-neg"
+                    : "text-ink"
+            }`}
+          >
+            {hasMe
+              ? formatMoney(Math.abs(myNet), trip.baseCurrency)
+              : formatMoney(total, trip.baseCurrency)}
+          </p>
+          <p className="mt-1 text-xs font-bold text-muted">
+            {!hasMe
+              ? "всего"
+              : myNet > 0.005
+                ? "вам должны"
+                : myNet < -0.005
+                  ? "вы должны"
+                  : "вы в расчёте"}
+          </p>
+        </button>
       </div>
 
       {/* Вкладки */}
